@@ -1,0 +1,180 @@
+<!-- issue-key.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Issue Key</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<style>
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 40px;
+        color: #2d3a4b;
+        letter-spacing: 1px;
+        font-size: 2.2em;
+        text-shadow: 0 2px 8px #e0e7ef;
+        transition: color 0.4s;
+    }
+
+    table {
+        margin: 40px auto;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 800px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(44, 62, 80, 0.15);
+        overflow: hidden;
+        animation: fadeIn 1s;
+    }
+
+    th, td {
+        padding: 18px 28px;
+        text-align: center;
+        font-size: 1.08em;
+        transition: background 0.3s, color 0.3s;
+    }
+
+    th {
+        background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+        color: #fff;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e0e7ef;
+    }
+
+    tr {
+        transition: background 0.3s;
+    }
+
+    tr:hover {
+        background: #f0f4ff;
+    }
+
+    td {
+        color: #2d3a4b;
+        border-bottom: 1px solid #e0e7ef;
+    }
+
+    button {
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        color: #fff;
+        border: none;
+        border-radius: 24px;
+        padding: 10px 28px;
+        font-size: 1em;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(67, 233, 123, 0.15);
+        transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+        outline: none;
+    }
+
+    button:hover {
+        background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 24px rgba(67, 233, 123, 0.18);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(40px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+</style>
+<body>
+  <h1>Issue Key for Assigned Slots</h1>
+  <div style="text-align: center; margin-top: 20px;">
+  <button onclick="goBack()"> ⬅️ Back to Dashboard</button>
+</div>
+
+<div style="text-align: center; margin-top: 10px;">
+  <button onclick="goToReturnKeys()"> ➡️ Return Issued Keys</button>
+</div>
+
+
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Customer</th>
+        <th>Slot</th>
+        <th>Key ID</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="issueTable"></tbody>
+  </table>
+
+ <script>
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const issueTable = document.getElementById('issueTable');
+
+  db.ref('StorageBookings').once('value')
+    .then(snapshot => {
+      const data = snapshot.val();
+      if (!data) {
+        issueTable.innerHTML = '<tr><td colspan="5">No bookings</td></tr>';
+        return;
+      }
+
+      let count = 0;
+      Object.entries(data).forEach(([id, b]) => {
+        if (b.slotAssigned && b.keyStatus === 'Not Issued') {
+          count++;
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${id}</td>
+            <td>${b.fullName || 'N/A'}</td>
+            <td>${b.slotAssigned}</td>
+            <td>${b.keyId}</td>
+            <td><button onclick="issueKey('${id}')">Issue Key</button></td>
+          `;
+          issueTable.appendChild(row);
+        }
+      });
+
+      if (count === 0) {
+        issueTable.innerHTML = '<tr><td colspan="5">No keys to issue</td></tr>';
+      }
+    })
+    .catch(err => {
+      console.error('Error loading bookings:', err);
+      issueTable.innerHTML = '<tr><td colspan="5">Failed to load bookings</td></tr>';
+    });
+
+  function issueKey(id) {
+    db.ref('StorageBookings/' + id).update({
+      keyStatus: 'Issued'
+    }).then(() => {
+      alert('Key issued!');
+      location.reload();
+    }).catch(err => {
+      console.error('Error updating key status:', err);
+    });
+  }
+    function goBack() {
+        window.location.href = 'admindashboard.html'; // Adjust the path as needed
+    }
+
+    function goToReturnKeys() {
+        window.location.href = 'returnkey.html'; // Adjust the path as needed
+    }
+</script>
+
+
+</body>
+</html>

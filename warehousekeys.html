@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Key Tracking System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .return-btn {
+      background-color: #28a745;
+    }
+
+    .return-btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Key Tracking System</h1>
+
+    <h2>Record Key Given</h2>
+    <form id="keyForm">
+      <label for="customerName">Customer Name:</label>
+      <input type="text" id="customerName" list="customerList" required />
+      <datalist id="customerList"></datalist>
+
+      <label for="keyId">Key ID:</label>
+      <input type="text" id="keyId" required readonly />
+
+      <button type="submit">Record Key Given</button>
+    </form>
+
+    <h2>Key Issue Log</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Key ID</th>
+          <th>Customer</th>
+          <th>Given Out Time</th>
+          <th>Returned</th>
+          <th>Returned Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="logTableBody"></tbody>
+    </table>
+
+    <button class="btn home-btn" id="homeBtn">Home</button>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const keyForm = document.getElementById('keyForm');
+    const logTableBody = document.getElementById('logTableBody');
+    let logs = [];
+
+    function generateKeyId() {
+      const timestamp = Date.now().toString(36);
+      const randomPart = Math.random().toString(36).substring(2, 6);
+      return `KEY-${timestamp}-${randomPart}`.toUpperCase();
+    }
+
+    function storeLogInDatabase(logEntry) {
+      const logRef = database.ref('keyLogs').push();
+      logRef.set(logEntry)
+        .then(() => console.log('Log stored successfully in database'))
+        .catch((error) => console.error('Error storing log in database:', error));
+    }
+
+    function loadLogsFromDatabase() {
+      database.ref('keyLogs').once('value', snapshot => {
+        logs = [];
+        snapshot.forEach(child => {
+          const log = child.val();
+          log.firebaseKey = child.key;
+          logs.push(log);
+        });
+        renderLogs();
+        updateCustomerList();
+      });
+    }
+
+    function renderLogs() {
+      logTableBody.innerHTML = '';
+      logs.forEach((log, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${log.keyId}</td>
+          <td>${log.customerName}</td>
+          <td>${log.givenOutTime}</td>
+          <td>${log.returned ? 'Yes' : 'No'}</td>
+          <td>${log.returnedTime || '-'}</td>
+          <td>
+            ${!log.returned 
+              ? `<button class="return-btn" onclick="returnKey(${index})">Return Key</button>` 
+              : ''
+            }
+          </td>
+        `;
+        logTableBody.appendChild(row);
+      });
+    }
+
+    function updateCustomerList() {
+      const uniqueNames = [...new Set(logs.map(log => log.customerName))];
+      const datalist = document.getElementById('customerList');
+      datalist.innerHTML = '';
+      uniqueNames.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+      });
+    }
+
+    function returnKey(index) {
+      logs[index].returned = true;
+      logs[index].returnedTime = new Date().toLocaleString();
+      const firebaseKey = logs[index].firebaseKey;
+      database.ref(`keyLogs/${firebaseKey}`).update({
+        returned: true,
+        returnedTime: logs[index].returnedTime
+      });
+      renderLogs();
+    }
+
+    keyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const customerName = document.getElementById('customerName').value;
+      const keyId = document.getElementById('keyId').value;
+      const givenOutTime = new Date().toLocaleString();
+
+      const logEntry = {
+        keyId,
+        customerName,
+        givenOutTime,
+        returned: false,
+        returnedTime: ''
+      };
+
+      storeLogInDatabase(logEntry);
+      logs.push(logEntry);
+      renderLogs();
+      updateCustomerList();
+
+      keyForm.reset();
+      document.getElementById('keyId').value = generateKeyId();
+      document.getElementById('customerName').focus();
+    });
+
+    window.onload = () => {
+      loadLogsFromDatabase();
+      document.getElementById('keyId').value = generateKeyId();
+    };
+
+    document.getElementById("homeBtn").addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

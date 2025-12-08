@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securemove Logistics - Export Quote Acceptance</title>
+
+    <!--Box Icons-->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eeeff1;
+            padding: 15px 100px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo img {
+            width: 90px;
+        }
+
+        .navbar {
+            display: flex;
+            list-style: none;
+        }
+
+        .navbar li {
+            position: relative;
+        }
+
+        .navbar a {
+            font-size: 1rem;
+            padding: 10px 20px;
+            color: #333;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .navbar a::after {
+            content: "";
+            width: 0;
+            height: 3px;
+            background: linear-gradient(to right, #007bff, #0056b3);
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            transition: 0.5s;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .header-btn a {
+            background: white;
+            color: #007bff;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .header-btn a:hover {
+            background: #0056b3;
+            color: white;
+        }
+
+        /* Quote Acceptance Section */
+        .quote-acceptance {
+            padding: 120px 50px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .heading span {
+            color: #007bff;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .heading h1 {
+            color: #007bff;
+            font-size: 32px;
+            margin-top: 10px;
+        }
+
+        .quote-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .quote-info {
+            margin-bottom: 30px;
+        }
+
+        .quote-info h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .info-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .info-section h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            padding: 10px 0;
+        }
+
+        .info-item strong {
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-item span {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .transport-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .transport-badge i {
+            font-size: 20px;
+        }
+
+        .package-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .documents-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .documents-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .documents-list li i {
+            color: #28a745;
+            font-size: 20px;
+        }
+
+        .no-docs-message {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* Price Summary */
+        .price-summary {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .price-breakdown {
+            margin-bottom: 15px;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 16px;
+        }
+
+        .price-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid white;
+        }
+
+        .alert-box {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Quote Actions */
+        .quote-actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .quote-actions h3 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .accept-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .accept-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .reject-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .disabled-btn {
+            background: #6c757d !important;
+            cursor: not-allowed !important;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        #responseMessage {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #responseMessage.show {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: white;
+            color: black;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+
+        footer .social a {
+            color: black;
+            margin: 0 15px;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        footer .social a:hover {
+            color: #007bff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px 20px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                padding-top: 10px;
+            }
+
+            .navbar li {
+                margin: 5px 0;
+            }
+
+            .quote-acceptance {
+                padding: 100px 20px 50px;
+            }
+
+            .quote-container {
+                padding: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .price-total {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!--Header-->
+    <header>
+        <a href="index.html" class="logo"><img src="img/logo.jpg" alt="Securemove Logistics"></a>
+
+        <ul class="navbar" id="navbar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#quote">Quote</a></li>
+        </ul>
+
+        <div class="header-btn">
+            <a href="signuplogin.html" class="sign-up">Sign Up</a>
+            <a href="signuplogin.html" class="login">Login</a>
+        </div>
+    </header>
+
+    <!--Quote Acceptance-->
+    <section class="quote-acceptance" id="quote">
+        <div class="heading">
+            <span>Export Shipment Quote</span>
+            <h1>Review and Accept Your Export Booking</h1>
+        </div>
+
+        <div class="quote-container">
+            <div id="order-badge" class="order-badge"></div>
+            
+            <div class="quote-info" id="quoteInfo">
+                <h2>Loading Quote Details...</h2>
+            </div>
+
+            <div class="quote-actions">
+                <h3>Would you like to proceed with this export shipment?</h3>
+                <div class="actions">
+                    <a href="#" class="btn accept-btn" id="acceptBtn">
+                        <i class='bx bx-check-circle'></i> Accept & Proceed to Payment
+                    </a>
+                    <a href="#" class="btn reject-btn" id="rejectBtn">
+                        <i class='bx bx-x-circle'></i> Reject Quote
+                    </a>
+                </div>
+                <p id="responseMessage"></p>
+            </div>
+        </div>
+    </section>
+
+    <!--Footer-->
+    <footer>
+        <div class="copyright">
+            <p>&#169; Securemove Logistics All Rights Reserved</p>
+            <div class="social">
+                <a href="https://www.instagram.com/securemove_logistics/" class="social-icon"><i class="bx bxl-instagram"></i></a>
+                <a href="https://wa.me/27793868100" target="_blank"><i class="bx bxl-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let currentOrderData = null;
+        let isExportOrder = false;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Try to get export order data from localStorage
+            let orderData = localStorage.getItem("lastExportOrder");
+            isExportOrder = true;
+
+            if (!orderData) {
+                // Fallback to standard transport order
+                orderData = localStorage.getItem("Orders");
+                isExportOrder = false;
+            }
+
+            if (orderData) {
+                let data = JSON.parse(orderData);
+                
+                // If export order, fetch latest status from Firebase
+                if (isExportOrder && data.orderId) {
+                    try {
+                        const orderRef = ref(database, `ExportOrders/${data.orderId}`);
+                        const snapshot = await get(orderRef);
+                        
+                        if (snapshot.exists()) {
+                            data = snapshot.val();
+                            localStorage.setItem("lastExportOrder", JSON.stringify(data));
+                        }
+                    } catch (error) {
+                        console.error("Error fetching order status:", error);
+                    }
+                }
+
+                currentOrderData = data;
+                
+                // Display order badge
+                if (data.orderId) {
+                    document.getElementById("order-badge").innerHTML = `<i class='bx bx-package'></i> Order #${data.orderId}`;
+                }
+
+                // Check order status for export orders
+                if (isExportOrder) {
+                    const status = data.status || 'Pending Validation';
+                    const packageSize = data.packageSize;
+                    
+                    // Disable accept button if not approved OR if bulk package
+                    if (status !== 'Approved' || packageSize === 'bulk') {
+                        const acceptBtn = document.getElementById("acceptBtn");
+                        acceptBtn.classList.add('disabled-btn');
+                        
+                        if (packageSize === 'bulk') {
+                            acceptBtn.innerHTML = '<i class="bx bx-time"></i> Awaiting Custom Quote';
+                            document.querySelector('.quote-actions h3').innerHTML = `
+                                <div style="color: #856404; margin-bottom: 20px;">
+                                    <i class='bx bx-info-circle' style='font-size: 28px;'></i><br>
+                                    Your shipment requires a custom quote. Our team will contact you within 24 hours with pricing.
+                                </div>
+                            `;
+                        } else if (status === 'Rejected') {
+                            acceptBtn.innerHTML = '<i class="bx bx-lock"></i> Documents Rejected';
+                            document.querySelector('.quote-actions h3').innerHTML = `
+                                <div style="color: #dc3545; margin-bottom: 20px;">
+                                    <i class='bx bx-error-circle' style='font-size: 28px;'></i><br>
+                                    Your export documents have been rejected. Please contact support or resubmit your booking.
+                                    ${data.rejectionReason ? `<br><br><strong>Reason:</strong> ${data.rejectionReason}` : ''}
+                                </div>
+                            `;
+                        } else if (status === 'Pending Validation') {
+                            acceptBtn.innerHTML = '<i class="bx bx-lock"></i> Awaiting Document Validation';
+                            document.querySelector('.quote-actions h3').innerHTML = `
+                                <div style="color: #856404; margin-bottom: 20px;">
+                                    <i class='bx bx-time-five' style='font-size: 28px;'></i><br>
+                                    Your documents are currently being validated by our team. Please wait for approval.
+                                </div>
+                            `;
+                        } else if (status === 'Pending Custom Quote') {
+                            acceptBtn.innerHTML = '<i class="bx bx-time"></i> Awaiting Custom Quote';
+                            document.querySelector('.quote-actions h3').innerHTML = `
+                                <div style="color: #856404; margin-bottom: 20px;">
+                                    <i class='bx bx-calculator' style='font-size: 28px;'></i><br>
+                                    Our team is preparing a custom quote for your bulk shipment. You will be contacted soon.
+                                </div>
+                            `;
+                        }
+                    } else {
+                        document.querySelector('.quote-actions h3').innerHTML = `
+                            <div style="color: #28a745; margin-bottom: 20px;">
+                                <i class='bx bx-check-circle' style='font-size: 28px;'></i><br>
+                                Your documents have been approved! You can now proceed to payment.
+                            </div>
+                        `;
+                    }
+                }
+
+                // Display quote
+                displayExportQuote(data);
+            } else {
+                document.getElementById("quoteInfo").innerHTML = `
+                    <div class="alert-box alert-warning">
+                        <i class='bx bx-error-circle' style='font-size: 24px;'></i>
+                        <span>No order data found. Please complete your booking first.</span>
+                    </div>
+                `;
+                document.getElementById("acceptBtn").style.display = "none";
+                document.getElementById("rejectBtn").style.display = "none";
+            }
+        });
+
+        function getPackageSizeName(size) {
+            const names = {
+                small: 'Small Package (Up to 10 kg)',
+                medium: 'Medium Package (10-30 kg)',
+                large: 'Large Package (30-70 kg)',
+                xlarge: 'Extra Large Package (70-250 kg)',
+                bulk: 'Oversized/Bulk (250+ kg)'
+            };
+            return names[size] || size;
+        }
+
+        function displayExportQuote(data) {
+            let modeIcon = 'bx-package';
+            let modeName = data.transportMode || 'Unknown';
+            
+            if (data.transportMode === 'air') {
+                modeIcon = 'bxs-plane-alt';
+                modeName = 'Air Freight';
+            } else if (data.transportMode === 'sea') {
+                modeIcon = 'bxs-ship';
+                modeName = 'Sea Freight';
+            } else if (data.transportMode === 'courier') {
+                modeIcon = 'bxs-car';
+                modeName = 'International Courier';
+            }
+
+            // Build documents list
+            let docsHTML = '';
+            if (data.documents && Object.keys(data.documents).length > 0) {
+                if (data.documents.note) {
+                    docsHTML = `<p class="no-docs-message">${data.documents.note}</p>`;
+                } else {
+                    docsHTML = '<ul class="documents-list">';
+                    for (const [key, doc] of Object.entries(data.documents)) {
+                        if (doc.uploaded) {
+                            const docName = key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            docsHTML += `
+                                <li>
+                                    <i class='bx bx-check-circle'></i>
+                                    <span>${docName}: ${doc.name}</span>
+                                </li>
+                            `;
+                        }
+                    }
+                    docsHTML += '</ul>';
+                }
+            }
+
+            document.getElementById("quoteInfo").innerHTML = `
+                <h2><i class='bx bx-file-blank'></i> Export Shipment Quote</h2>
+
+                <!-- Customer Information -->
+                <div class="info-section">
+                    <h3><i class='bx bx-user'></i> Customer Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Full Name:</strong>
+                            <span>${data.name || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Email:</strong>
+                            <span>${data.email || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Phone:</strong>
+                            <span>${data.phone || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transport Details -->
+                <div class="info-section">
+                    <h3><i class='bx bx-package'></i> Shipment Information</h3>
+                    <div class="info-item" style="margin-bottom: 15px;">
+                        <strong>Transport Mode:</strong><br>
+                        <span class="transport-badge">
+                            <i class='bx ${modeIcon}'></i>
+                            ${modeName}
+                        </span>
+                    </div>
+                    <div class="info-item" style="margin-bottom: 15px;">
+                        <strong>Package Size:</strong><br>
+                        <span class="package-badge">
+                            <i class='bx bx-box'></i>
+                            ${getPackageSizeName(data.packageSize)}
+                        </span>
+                    </div>
+                    <div class="info-item" style="margin-bottom: 15px;">
+                        <strong>Status:</strong><br>
+                        <span class="status-badge ${data.status === 'Approved' ? 'status-approved' : data.status === 'Rejected' ? 'status-rejected' : 'status-pending'}">
+                            ${data.status || 'Pending Validation'}
+                        </span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Origin City:</strong>
+                            <span>${data.originCity ? data.originCity.charAt(0).toUpperCase() + data.originCity.slice(1).replace('-', ' ') : 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Destination Continent:</strong>
+                            <span>${data.destinationContinent ? data.destinationContinent.charAt(0).toUpperCase() + data.destinationContinent.slice(1).replace('-', ' ') : 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Destination Country:</strong>
+                            <span>${data.destinationCountry || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cargo Details -->
+                <div class="info-section">
+                    <h3><i class='bx bx-cube'></i> Cargo Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Cargo Type:</strong>
+                            <span>${data.cargoType ? data.cargoType.charAt(0).toUpperCase() + data.cargoType.slice(1) : 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Package Weight:</strong>
+                            <span>${data.packageWeight || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Package Dimensions:</strong>
+                            <span>${data.packageDimensions || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <strong>Cargo Description:</strong>
+                        <span>${data.cargoDescription || 'N/A'}</span>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                ${data.transportMode !== 'courier' ? `
+                <div class="info-section">
+                    <h3><i class='bx bx-file'></i> Export Documentation</h3>
+                    ${docsHTML}
+                </div>
+                ` : ''}
+
+                ${data.status === 'Rejected' && data.rejectionReason ? `
+                <div class="info-section" style="background: #f8d7da; border-left-color: #dc3545;">
+                    <h3 style="color: #721c24;"><i class='bx bx-error-circle'></i> Rejection Reason</h3>
+                    <p style="color: #721c24; margin-top: 10px;">${data.rejectionReason}</p>
+                </div>
+                ` : ''}
+
+                <!-- Price Summary -->
+                <div class="price-summary">
+                    <h3><i class='bx bx-calculator'></i> Cost Breakdown</h3>
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>Base Fee:</span>
+                            <span>${data.pricing?.baseFee || 'R 0'}</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Transport Cost:</span>
+                            <span>${data.pricing?.transportCost || 'R 0'}</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Package Size Charge:</span>
+                            <span>${data.pricing?.packageCost || 'R 0'}</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Documentation Fee:</span>
+                            <span>${data.pricing?.docFee || 'R 0'}</span>
+                        </div>
+                    </div>
+                    <div class="price-total">
+                        <span>Total Cost:</span>
+                        <span>${data.pricing?.total || 'R 0'}</span>
+                    </div>
+                </div>
+
+                <div class="alert-box alert-info">
+                    <i class='bx bx-info-circle' style='font-size: 24px;'></i>
+                    <span><strong>Important:</strong> ${data.packageSize === 'bulk' ? 'This shipment requires a custom quote. Our team will contact you within 24 hours.' : data.transportMode !== 'courier' ? 'Your documents are being validated. ' : ''}Final price may vary based on actual cargo inspection and customs requirements.</span>
+                </div>
+            `;
+        }
+
+        // Accept button handler
+        document.getElementById("acceptBtn").addEventListener("click", function (event) {
+            event.preventDefault();
+
+            let orderData = localStorage.getItem("lastExportOrder");
+
+            if (orderData) {
+                const data = JSON.parse(orderData);
+                
+                // Check if it's an export order and validate status
+                if (data.status && data.status !== 'Approved') {
+                    let message = '';
+                    if (data.status === 'Rejected') {
+                        message = '❌ This order has been rejected. You cannot proceed to payment. Please contact support or create a new booking.';
+                    } else if (data.status === 'Pending Validation') {
+                        message = '⏳ Your documents are still being validated. Please wait for admin approval before proceeding to payment.';
+                    } else if (data.status === 'Pending Custom Quote') {
+                        message = '⏳ Your shipment requires a custom quote. Our team will contact you within 24 hours.';
+                    }
+                    
+                    const responseMsg = document.getElementById("responseMessage");
+                    responseMsg.textContent = message;
+                    responseMsg.style.color = "white";
+                    responseMsg.style.background = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+                    responseMsg.classList.add("show");
+                    return;
+                }
+
+                // Check if bulk package
+                if (data.packageSize === 'bulk') {
+                    const responseMsg = document.getElementById("responseMessage");
+                    responseMsg.textContent = '⏳ This shipment requires a custom quote. Our team will contact you within 24 hours.';
+                    responseMsg.style.color = "white";
+                    responseMsg.style.background = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+                    responseMsg.classList.add("show");
+                    return;
+                }
+
+                let totalPrice = 0;
+
+                // Extract price from export order
+                if (data.pricing && data.pricing.total) {
+                    const totalText = data.pricing.total;
+                    if (totalText === 'Custom Quote Required') {
+                        const responseMsg = document.getElementById("responseMessage");
+                        responseMsg.textContent = '⏳ This shipment requires a custom quote. Our team will contact you soon.';
+                        responseMsg.style.color = "white";
+                        responseMsg.style.background = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+                        responseMsg.classList.add("show");
+                        return;
+                    }
+                    totalPrice = parseFloat(totalText.replace(/[R,\s]/g, ''));
+                }
+
+                if (totalPrice > 0) {
+                    const exchangeRate = 0.0498970;
+                    const priceInUSD = totalPrice * exchangeRate;
+
+                    localStorage.setItem("totalPriceZAR", totalPrice.toFixed(2));
+                    localStorage.setItem("totalPriceUSD", priceInUSD.toFixed(2));
+                    
+                    console.log("Price in ZAR: R" + totalPrice.toFixed(2));
+                    console.log("Price in USD: $" + priceInUSD.toFixed(2));
+                } else {
+                    console.error("No valid price found.");
+                }
+            }
+
+            const responseMsg = document.getElementById("responseMessage");
+            responseMsg.textContent = "✓ You have accepted the quote. Redirecting to payment...";
+            responseMsg.style.color = "white";
+            responseMsg.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+            responseMsg.classList.add("show");
+
+            setTimeout(() => {
+                window.location.href = "payment.html";
+            }, 2000);
+        });
+
+        // Reject button handler
+        document.getElementById("rejectBtn").addEventListener("click", function (event) {
+            event.preventDefault();
+            
+            const responseMsg = document.getElementById("responseMessage");
+            responseMsg.textContent = "✗ You have rejected the quote. Please contact us if you need modifications.";
+            responseMsg.style.color = "white";
+            responseMsg.style.background = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+            responseMsg.classList.add("show");
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 2000);
+        });
+    </script>
+</body>
+
+</html>

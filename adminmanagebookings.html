@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Manage Bookings</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+ 
+ <style>
+   body {
+     font-family: 'Inter', sans-serif;
+     margin: 0;
+     background: linear-gradient(45deg, #f4f7ff, #e7ecff, #b2c4ff);
+     background-size: 400% 400%;
+     animation: gradientAnimation 6s ease infinite;
+     color: #333;
+     overflow-x: hidden;
+     display: flex;
+     flex-direction: column;
+     min-height: 100vh;
+   }
+ 
+   /* Header and Footer */
+   .admin-header,
+   .admin-footer {
+     background-color: #1f2937;
+     color: #fff;
+     padding: 1.5rem;
+     text-align: center;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     width: 100%;
+   }
+ 
+   .admin-header h1 {
+     font-size: 2.5rem;
+     margin: 0;
+     letter-spacing: 1px;
+   }
+ 
+   /* Navigation Buttons */
+   .admin-nav .btn {
+     background: #3b82f6;
+     color: white;
+     padding: 0.6rem 1.2rem;
+     margin: 0.5rem;
+     border: none;
+     text-decoration: none;
+     border-radius: 10px;
+     transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     animation: fadeIn 0.5s ease forwards;
+   }
+ 
+   .admin-nav .btn:hover {
+     background: #2563eb;
+     transform: translateY(-2px);
+     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+   }
+ 
+   @keyframes gradientAnimation {
+     0% { background-position: 0% 50%; }
+     50% { background-position: 100% 50%; }
+     100% { background-position: 0% 50%; }
+   }
+ 
+   .container {
+     width: 90%;
+     max-width: 1000px;
+     margin: 40px auto;
+     background: #fff;
+     padding: 30px 40px;
+     border-radius: 20px;
+     box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+     animation: fadeInUp 1s ease-out;
+     flex-grow: 1; /* Ensures the content area expands to fill space between header and footer */
+   }
+ 
+   h1 {
+     text-align: center;
+     font-size: 2.5rem;
+     margin-bottom: 30px;
+     color: #1a237e;
+     letter-spacing: 1px;
+     animation: fadeIn 1.5s ease-in-out;
+   }
+ 
+   @keyframes fadeIn {
+     0% { opacity: 0; }
+     100% { opacity: 1; }
+   }
+ 
+   table {
+     width: 100%;
+     border-collapse: collapse;
+     animation: fadeIn 1s ease-in-out;
+   }
+ 
+   th, td {
+     padding: 16px;
+     text-align: left;
+     border-bottom: 1px solid #ddd;
+     font-size: 1rem;
+     transition: background-color 0.3s ease;
+   }
+ 
+   th {
+     background-color: #3f51b5;
+     color: white;
+     position: sticky;
+     top: 0;
+     font-size: 1.2rem;
+   }
+ 
+   td {
+     background-color: #fafafa;
+     color: #555;
+     transition: background-color 0.3s ease;
+   }
+ 
+   td:hover {
+     background-color: #f1f1f1;
+   }
+ 
+   .status-select {
+     padding: 8px;
+     border-radius: 6px;
+     border: 1px solid #ccc;
+     background-color: #f9f9f9;
+     transition: background-color 0.3s ease, transform 0.3s ease;
+   }
+ 
+   .status-select:hover {
+     background-color: #e1e1e1;
+     transform: scale(1.05);
+   }
+ 
+   .update-btn {
+     padding: 10px 16px;
+     background-color: #4caf50;
+     color: white;
+     border: none;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: background-color 0.3s ease, transform 0.3s ease;
+     font-size: 1rem;
+   }
+ 
+   .update-btn:hover {
+     background-color: #388e3c;
+     transform: translateY(-3px);
+   }
+ 
+   .update-btn:active {
+     transform: translateY(1px);
+   }
+ 
+   .toast {
+     position: fixed;
+     bottom: 30px;
+     right: 30px;
+     background: #323232;
+     color: white;
+     padding: 12px 18px;
+     border-radius: 10px;
+     opacity: 0;
+     animation: slideIn 0.5s forwards;
+   }
+ 
+   @keyframes slideIn {
+     from { transform: translateY(30px); opacity: 0; }
+     to { transform: translateY(0); opacity: 1; }
+   }
+ 
+   @keyframes fadeInUp {
+     from { opacity: 0; transform: translateY(20px); }
+     to { opacity: 1; transform: translateY(0); }
+   }
+ 
+   .floating-btn {
+     position: fixed;
+     bottom: 30px;
+     right: 30px;
+     background-color: #6200ea;
+     color: white;
+     padding: 16px 20px;
+     border-radius: 50%;
+     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+     cursor: pointer;
+     font-size: 1.5rem;
+     transition: transform 0.3s ease, background-color 0.3s ease;
+   }
+ 
+   .floating-btn:hover {
+     background-color: #3700b3;
+     transform: translateY(-5px);
+   }
+ 
+ </style>
+ 
+ <!-- Firebase SDK -->
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+ 
+ <!--Email-->
+ <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+ 
+<script>
+ // Initialize EmailJS with your public key
+ (function() {
+   emailjs.init("0gGEZTE0vmwEHnIPT"); // actual public key
+ })();
+</script>
+ 
+</head>
+<body>
+ 
+ <header class="admin-header">
+   <h1>Warehouse Slot Management</h1>
+   <nav class="admin-nav">
+     <a href="admindashboard.html" class="btn">Back to Dashboard</a>
+   </nav>
+ </header>
+     
+ <div class="container">
+   <h1>📦 Manage All Bookings</h1>
+   <table>
+     <thead>
+       <tr>
+         <th>Order ID</th>
+         <th>Customer Name</th>
+         <th>Phone</th>
+         <th>Pickup Address</th>
+         <th>Dropoff Address</th>      
+         <th>Status</th>
+         <th>Action</th>
+       </tr>
+     </thead>
+     <tbody id="bookings-table">
+       <!-- Populated by JavaScript -->
+     </tbody>
+   </table>
+ </div>
+ 
+ <footer class="admin-footer">
+   SecureMove Logistics &copy; 2025
+ </footer>
+ 
+ <div id="toast" class="toast" style="display: none;">Status updated</div>
+ 
+ <script>
+ 
+ 
+   firebase.initializeApp(firebaseConfig);
+   const db = firebase.database();
+ 
+   function showToast(message) {
+     const toast = document.getElementById("toast");
+     toast.textContent = message;
+     toast.style.display = "block";
+     setTimeout(() => { toast.style.display = "none"; }, 2500);
+   }
+ 
+   function fetchBookings() {
+     const tableBody = document.getElementById("bookings-table");
+ 
+     db.ref("Orders").once("value")
+       .then((snapshot) => {
+         const Orders = snapshot.val();
+         console.log("🔥 bookings snapshot:", Orders);
+ 
+         if (!Orders) {
+           console.warn("⚠️ No bookings found.");
+           tableBody.innerHTML = '<tr><td colspan="7">No bookings found</td></tr>';
+           return;
+         }
+ 
+         for (const id in Orders) {
+           const booking = Orders[id]; // Access each booking's data
+           console.log(`✅ Order [${id}]:`, booking); // Log the individual booking data
+ 
+           const row = document.createElement("tr");
+ 
+           row.innerHTML = `
+             <td>${booking.orderid}</td>
+             <td>${booking.name}</td>
+             <td>${booking.phone}</td>
+             <td>${booking.pickup_address}</td>
+             <td>${booking.dropoff_address}</td>
+             <td>
+               <select class="status-select" data-id="${id}">
+                 <option value="Pending" ${booking.status === "Pending" ? "selected" : ""}>Pending</option>
+                 <option value="Picked Up" ${booking.status === "Picked Up" ? "selected" : ""}>Picked Up</option>
+                 <option value="In Transit" ${booking.status === "In Transit" ? "selected" : ""}>In Transit</option>
+                 <option value="Delivered" ${booking.status === "Delivered" ? "selected" : ""}>Delivered</option>
+               </select>
+             </td>
+             <td><button class="update-btn" onclick="updateStatus('${id}')">Update</button></td>
+           `;
+ 
+           tableBody.appendChild(row);
+         }
+       })
+       .catch((error) => {
+         console.error("❌ Error fetching bookings:", error);
+       });
+   }
+ 
+
+   
+ 
+   function showToast(message) {
+     alert(message);
+   }
+ 
+    function updateStatus(bookingId) {
+     const select = document.querySelector(`.status-select[data-id="${bookingId}"]`);
+     const newStatus = select.value;
+ 
+     // Assuming Firebase is already initialized
+     db.ref("Orders/" + bookingId).once("value")
+       .then((snapshot) => {
+         const order = snapshot.val();
+ 
+         return db.ref("Orders/" + bookingId).update({ status: newStatus })
+           .then(() => {
+             showToast("✅ Status updated");
+ 
+             const emailParams = {
+               to_email: order.email,
+               to_name: order.firstName,
+               booking_id: bookingId,
+               new_status: newStatus
+             };
+ 
+             return emailjs.send("service_va5kbt3", "template_etf6n2b", emailParams);
+           })
+           .then(() => {
+             showToast("✅ Email sent")
+             console.log("✅ Email sent");
+           });
+       })
+       .catch((err) => {
+         showToast("❌ Failed to update");
+         console.error(err);
+       });
+   }
+   
+   window.onload = fetchBookings;
+ </script>
+</body>
+</html>

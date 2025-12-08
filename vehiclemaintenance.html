@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Vehicle Maintenance Dashboard</title> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/> 
+    <link rel="preconnect" href="https://fonts.googleapis.com"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #002fff; 
+            --secondary-color: #00bbff; 
+            --background-color: #f0f4f8; 
+            --card-background: #ffffff; 
+            --text-color: #333; 
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.15); 
+        }
+        body {
+            font-family: 'Roboto', sans-serif; 
+            background-color: var(--background-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 0; 
+        }
+        .dashboard-wrapper {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .content-with-gifs {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+        }
+        .gif-container {
+            width: 400px;
+            height: calc(100vh - 180px);
+            position: sticky;
+            top: 110px;
+        }
+        .gif-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+        }
+        .dashboard-header-container {
+            background-color: var(--card-background); 
+            border-radius: 15px; 
+            padding: 30px; 
+            box-shadow: var(--shadow-light); 
+            margin-bottom: 30px; 
+        }
+        .dashboard-header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .dashboard-header h1 {
+            font-size: 2.5em; 
+            color: var(--primary-color); 
+            margin: 0; 
+        }
+        .header-actions {
+            display: flex; 
+            gap: 15px; 
+        }
+        .btn {
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            font-weight: 500; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            border: none; 
+            color: white; 
+            background: linear-gradient(90deg, #6a11cb, #2575fc); 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+        }
+        .btn:hover {
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+        }
+        .dashboard-grid {
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 30px;
+            width: 100%;
+            max-width: 1400px; 
+        }
+        .dashboard-main, .dashboard-sidebar {
+            background: var(--card-background); 
+            border-radius: 15px; 
+            box-shadow: var(--shadow-light); 
+            padding: 30px; 
+        }
+        .dashboard-sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
+            color: white; 
+            padding: 30px; 
+            box-shadow: var(--shadow-light); 
+        }
+        .overview-section h3, .chart-section h3 {
+            margin-top: 0; 
+            font-size: 1.5em; 
+            border-bottom: 1px solid rgba(255,255,255,0.3); 
+            padding-bottom: 10px; 
+            color: white; 
+        }
+        .overview-section .stats-list p {
+            margin: 10px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 1.1em; 
+        }
+        .overview-section .stats-list span {
+            font-size: 1.3em; 
+            font-weight: bold; 
+        }
+        .add-vehicle-section h2 {
+            font-size: 1.5em; 
+            color: var(--primary-color); 
+            margin-top: 0; 
+        }
+        .add-vehicle-form {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            align-items: flex-end; 
+            margin-bottom: 25px;
+        }
+        .add-vehicle-form input {
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            transition: border-color 0.2s; 
+        }
+        .add-vehicle-form input:focus {
+            border-color: var(--primary-color); 
+            outline: none; 
+        }
+        .search-container {
+            margin-bottom: 25px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        .vehicle-cards-container {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 25px; 
+        }
+        .vehicle-card {
+            background: var(--card-background); 
+            border-radius: 15px; 
+            box-shadow: var(--shadow-light); 
+            padding: 25px; 
+            border-left: 5px solid; 
+            transition: box-shadow 0.3s, transform 0.3s; 
+        }
+        .vehicle-card:hover {
+            box-shadow: var(--shadow-hover); 
+            transform: translateY(-5px); 
+        }
+        .card-header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px; 
+        }
+        .card-header h3 {
+            margin: 0; 
+            font-size: 1.3em; 
+            color: var(--primary-color); 
+        }
+        .status {
+            font-weight: bold; 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            color: white; 
+        }
+        .status.good { background-color: #28a745; } 
+        .status.inspect { background-color: #ffc107; } 
+        .status.due { background-color: #fd7e14; } 
+        .status.urgent { background-color: #dc3545; } 
+        .update-form {
+            margin-top: 20px; 
+            border-top: 1px dashed #e0e0e0; 
+            padding-top: 20px; 
+        }
+        .update-form-grid {
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 10px; 
+        }
+        .update-form input {
+            width: 100%; 
+            padding: 8px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+        }
+        .update-form-actions {
+            display: flex; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+        .update-btn, .remove-btn, .maintenance-btn {
+            padding: 8px 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: 500; 
+            transition: background-color 0.2s, transform 0.2s; 
+            border: none; 
+            color: white; 
+            flex-grow: 1; 
+        }
+        .update-btn {
+            background: linear-gradient(90deg, #6a11cb, #2575fc); 
+        }
+        .update-btn:hover {
+            background: linear-gradient(90deg, #2575fc, #6a11cb); 
+            transform: translateY(-2px); 
+        }
+        .maintenance-btn {
+            background-color: #17a2b8; 
+        }
+        .maintenance-btn:hover {
+            background-color: #138496; 
+            transform: translateY(-2px); 
+        }
+        .remove-btn {
+            background-color: #dc3545; 
+        }
+        .remove-btn:hover {
+            background-color: #c82333; 
+            transform: translateY(-2px); 
+        }
+        @media (max-width: 1400px) {
+            .gif-container {
+                display: none;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column; 
+                gap: 15px; 
+            }
+            .header-actions {
+                width: 100%; 
+                justify-content: center; 
+            }
+            .header-actions .btn {
+                flex: 1; 
+            }
+            .update-form-actions {
+                flex-direction: column; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper"> 
+        <header class="dashboard-header-container"> 
+            <div class="dashboard-header"> 
+                <h1><i class="fas fa-tools"></i> Vehicle Maintenance</h1> 
+                <div class="header-actions"> 
+                    <a href="admindashboard.html" class="btn">Back to Dashboard</a> 
+                    <a href="index.html" class="btn" style="background: #dc3545;">Logout</a> 
+                </div>
+            </div>
+        </header>
+
+        <div class="content-with-gifs">
+            <div class="gif-container left-gif">
+                <img src="img/truck-moving-vid.gif" alt="Logistics Animation">
+            </div>
+
+            <div class="dashboard-grid"> 
+                <div class="dashboard-main"> 
+                    <div class="add-vehicle-section"> 
+                        <h2>Add New Vehicle</h2> 
+                        <div class="add-vehicle-form"> 
+                            <input type="text" id="newVehicleName" placeholder="Enter Vehicle Name" required> 
+                            <input type="text" id="newVehicleModel" placeholder="Enter Model" required> 
+                            <input type="number" id="initialMileage" placeholder="Enter Initial Mileage (km)" required min="0"> 
+                            <input type="number" id="maintenanceInterval" placeholder="Enter Maintenance Interval (km)" required min="1"> 
+                            <button class="btn" onclick="addNewVehicle()"><i class="fas fa-plus"></i> Add Vehicle</button> 
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search for a vehicle by name or model...">
+                        <p id="searchMessage" style="display: none; color: red; margin-top: 10px;"></p>
+                    </div>
+                    <div id="vehicleList" class="vehicle-cards-container"> 
+                    </div>
+                </div>
+                <div class="dashboard-sidebar"> 
+                    <div class="overview-section"> 
+                        <h3>Fleet Overview</h3> 
+                        <div class="stats-list"> 
+                            <p><i class="fas fa-truck-fast"></i> Total Vehicles: <span id="totalVehicles">0</span></p> 
+                            <p><i class="fas fa-check-circle"></i> Good Health: <span class="text-good" id="goodHealth">0</span></p> 
+                            <p><i class="fas fa-exclamation-triangle"></i> Needs Inspection: <span class="text-inspect" id="needsInspect">0</span></p> 
+                            <p><i class="fas fa-bell"></i> Maintenance Due: <span class="text-due" id="maintenanceDue">0</span></p> 
+                            <p><i class="fas fa-exclamation-circle"></i> Urgent Issues: <span class="text-urgent" id="urgentIssues">0</span></p> 
+                        </div>
+                    </div>
+                    <div class="chart-section"> 
+                        <h3>Fleet Health Analytics</h3> 
+                        <canvas id="fleetHealthChart"></canvas> 
+                    </div>
+                    <div class="chart-section">
+                        <h3>Engine & Oil Sensors</h3>
+                        <canvas id="engineHealthChart"></canvas>
+                    </div>
+                    <div class="chart-section">
+                        <h3>Tire Pressure (PSI)</h3>
+                        <canvas id="tirePressureChart"></canvas>
+                    </div>
+                    <div class="chart-section">
+                        <h3>Environmental Factors</h3>
+                        <canvas id="environmentChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gif-container right-gif">
+                <img src="img/inside-truck-vid.gif" alt="Truck Interior Animation">
+            </div>
+        </div>
+    </div>
+    <script type="module" src="vehiclemaintenance.js"></script>
+</body>
+
+
+
+</html>
+

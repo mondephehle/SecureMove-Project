@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Financial Info Form</title>
+  <!-- Chart.js (UMD build to avoid sourcemap 404) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #2c3e50;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  background: rgba(255,255,255,0.97);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  color: #2c3e50;
+}
+
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 22px;
+  margin-bottom: 25px;
+}
+@media (max-width: 700px) {
+  form { grid-template-columns: 1fr; }
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 0.92rem;
+  color: #34495e;
+}
+
+input, select {
+  padding: 11px 14px;
+  border: 2px solid #e0e6ed;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  transition: all .25s ease;
+  background:#fff;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+}
+
+.btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all .3s ease;
+}
+.btn:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 18px rgba(52,152,219,.35); 
+}
+.btn-green { background: linear-gradient(135deg, #27ae60, #229954); }
+.btn-yellow { background: linear-gradient(135deg, #f39c12, #d35400); }
+.btn-ghost { background:#fff; color:#2c3e50; border:2px solid #e0e6ed; }
+.btn-ghost:hover { border-color:#3498db; background:#f8faff; }
+
+.form-actions {
+  grid-column: span 2; 
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Table Styling */
+table {
+  border-collapse: collapse; 
+  width: 100%; 
+  margin-top: 15px; 
+  background: #fff;
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+th, td { 
+  border: 1px solid #e9ecef; 
+  padding: 10px 12px; 
+  text-align: left; 
+  font-size: .9rem; 
+}
+th { 
+  background: linear-gradient(135deg, #2c3e50, #3498db); 
+  color: #fff; 
+  font-weight: 600; 
+}
+tbody tr:nth-child(even) { background: #f9fbfd; }
+tbody tr:hover { background: #eef5ff; }
+tfoot td { background: #f8f9fa; font-weight: bold; }
+
+/* Chart Card */
+.chart-card {
+  margin-top: 30px; 
+  background:#fff; 
+  padding:22px; 
+  border-radius:14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  overflow-x: auto;   /* allows scroll if chart is too wide */
+}
+
+.chart-card canvas {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 500px;   /* keep readability on narrow screens */
+  display: block;
+}
+
+.row { display:flex; gap:12px; flex-wrap: wrap; align-items:center; }
+.spacer { flex:1; }
+
+/* Messages */
+.success-message, .error-message {
+  padding: 12px; 
+  border-radius: 8px;
+  margin-bottom: 15px; 
+  text-align: center; 
+  display: none;
+  font-size: 0.95rem;
+  animation: fadeIn .4s ease;
+}
+.success-message { background: #d4edda; color: #155724; border:1px solid #c3e6cb; }
+.error-message { background: #f8d7da; color: #721c24; border:1px solid #f5c6cb; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Financial Expenses </h1>
+    <a href="admindashboard.html" class="btn" style="margin-right:15px; display:inline-block;">Back to Dashboard </a>
+
+    <!-- Success/Error Messages -->
+    <div id="successMessage" class="success-message"></div>
+    <div id="errorMessage" class="error-message"></div>
+
+    <!-- FORM -->
+    <form id="financialForm">
+      <input type="hidden" id="docId">
+      <div><label>Workers' Wages</label><input type="number" id="workers_wages" required step="0.01"></div>
+      <div><label>Utilities Bill</label><input type="number" id="utilities_bill" required step="0.01"></div>
+      <div><label>Security Price</label><input type="number" id="security_price" required step="0.01"></div>
+      <div><label>Fuel Cost</label><input type="number" id="fuel_cost" required step="0.01"></div>
+      <div><label>Insurance Payment</label><input type="number" id="insurance_payment" required step="0.01"></div>
+      <div><label>Tracking Payment</label><input type="number" id="tracking_payment" required step="0.01"></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn">Submit</button>
+        <button type="button" id="resetBtn" class="btn btn-yellow">Reset</button>
+        <div class="spacer"></div>
+        <div class="row">
+          <label>From <input type="date" id="fromDate"></label>
+          <label>To <input type="date" id="toDate"></label>
+          <button type="button" id="filterBtn" class="btn btn-ghost">Apply Filter</button>
+          <button type="button" id="exportCsvBtn" class="btn btn-green">Export CSV</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- TABLE -->
+    <table id="financialTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Workers' Wages</th>
+          <th>Utilities</th>
+          <th>Security</th>
+          <th>Fuel</th>
+          <th>Insurance</th>
+          <th>Tracking</th>
+          <th>Total</th>
+          <th>Timestamp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="7" style="text-align:right;"><strong>Grand Total:</strong></td>
+          <td id="grandTotal">0</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- CHART -->
+    <div class="chart-card">
+      <div class="row" style="margin-bottom:10px;">
+        <div>
+          <label for="chartSelect" style="font-weight:600;">Select Expense:</label>
+          <select id="chartSelect">
+            <option value="all">All Categories</option>
+            <option value="workers_wages">Workers' Wages</option>
+            <option value="utilities_bill">Utilities Bill</option>
+            <option value="security_price">Security Price</option>
+            <option value="fuel_cost">Fuel Cost</option>
+            <option value="insurance_payment">Insurance Payment</option>
+            <option value="tracking_payment">Tracking Payment</option>
+          </select>
+        </div>
+      </div>
+      <canvas id="financialChart"></canvas>
+    </div>
+  </div>
+
+  <script type="module">
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const financialRef = ref(db, "financial_info");
+
+    /* DOM refs */
+    const form = document.getElementById("financialForm");
+    const resetBtn = document.getElementById("resetBtn");
+    const tbody = document.querySelector("#financialTable tbody");
+    const grandTotalEl = document.getElementById("grandTotal");
+    const chartSelect = document.getElementById("chartSelect");
+    const fromDate = document.getElementById("fromDate");
+    const toDate = document.getElementById("toDate");
+    const filterBtn = document.getElementById("filterBtn");
+    const exportCsvBtn = document.getElementById("exportCsvBtn");
+    const successMessage = document.getElementById("successMessage");
+    const errorMessage = document.getElementById("errorMessage");
+
+    /* State */
+    let chart;
+    let filteredDocs = [];
+    let allData = [];
+
+    /* Helpers */
+    const fmt = n => (n ?? 0).toLocaleString();
+    const totalOf = d =>
+      (d.workers_wages||0)+(d.utilities_bill||0)+(d.security_price||0)+
+      (d.fuel_cost||0)+(d.insurance_payment||0)+(d.tracking_payment||0);
+
+    function showMessage(message, isError = false) {
+      if (isError) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        setTimeout(() => {
+          errorMessage.style.display = 'none';
+        }, 5000);
+      } else {
+        successMessage.textContent = message;
+        successMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+        setTimeout(() => {
+          successMessage.style.display = 'none';
+        }, 3000);
+      }
+    }
+
+    /* Submit Form - Save to Firebase */
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const data = {
+        workers_wages: parseFloat(document.getElementById("workers_wages").value) || 0,
+        utilities_bill: parseFloat(document.getElementById("utilities_bill").value) || 0,
+        security_price: parseFloat(document.getElementById("security_price").value) || 0,
+        fuel_cost: parseFloat(document.getElementById("fuel_cost").value) || 0,
+        insurance_payment: parseFloat(document.getElementById("insurance_payment").value) || 0,
+        tracking_payment: parseFloat(document.getElementById("tracking_payment").value) || 0,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        // Get next sequential ID
+        const snapshot = await get(child(ref(db), "financial_info"));
+        let nextKey = 1;
+        
+        if (snapshot.exists()) {
+          const existingData = snapshot.val();
+          const keys = Object.keys(existingData).map(Number);
+          nextKey = Math.max(...keys) + 1;
+        }
+
+        // Save to Firebase
+        await set(ref(db, `financial_info/${nextKey}`), {
+          id: nextKey,
+          ...data
+        });
+
+        showMessage(`Financial record #${nextKey} added successfully!`);
+        form.reset();
+        loadTable(); // Refresh table
+        
+      } catch (error) {
+        console.error("Error saving data:", error);
+        showMessage("Failed to save financial data. Please try again.", true);
+      }
+    });
+
+    /* Delete Record */
+    async function deleteRecord(id) {
+      if (confirm("Are you sure you want to delete this record?")) {
+        try {
+          await remove(ref(db, `financial_info/${id}`));
+          showMessage("Record deleted successfully!");
+          loadTable(); // Refresh table
+        } catch (error) {
+          console.error("Error deleting record:", error);
+          showMessage("Failed to delete record. Please try again.", true);
+        }
+      }
+    }
+
+    resetBtn.onclick = () => form.reset();
+    filterBtn.onclick = () => loadTable();
+    chartSelect.onchange = () => loadTable();
+    exportCsvBtn.onclick = () => exportCSV();
+
+    /* Load Data from Firebase */
+    async function loadTable() {
+      try {
+        const snapshot = await get(child(ref(db), "financial_info"));
+        
+        if (!snapshot.exists()) {
+          tbody.innerHTML = "<tr><td colspan='10'>No financial records found.</td></tr>";
+          grandTotalEl.textContent = "0";
+          filteredDocs = [];
+          updateChart();
+          return;
+        }
+
+        const data = snapshot.val();
+        allData = Object.values(data).map(item => ({
+          ...item,
+          _ts: new Date(item.timestamp)
+        }));
+
+        // Sort by timestamp (newest first)
+        allData.sort((a, b) => b._ts - a._ts);
+
+        // Apply date filters
+        const from = fromDate.value ? new Date(fromDate.value + "T00:00:00") : null;
+        const to = toDate.value ? new Date(toDate.value + "T23:59:59") : null;
+
+        filteredDocs = allData.filter(d => {
+          if (from && d._ts < from) return false;
+          if (to && d._ts > to) return false;
+          return true;
+        });
+
+        // Render table
+        renderTable();
+        updateChart();
+
+      } catch (error) {
+        console.error("Error loading data:", error);
+        showMessage("Failed to load financial data.", true);
+      }
+    }
+
+    function renderTable() {
+      tbody.innerHTML = "";
+      let grand = 0;
+
+      if (filteredDocs.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='10'>No records match your filters.</td></tr>";
+        grandTotalEl.textContent = "0";
+        return;
+      }
+
+      filteredDocs.forEach(d => {
+        const total = totalOf(d);
+        grand += total;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>#${d.id}</strong></td>
+          <td>${fmt(d.workers_wages)}</td>
+          <td>${fmt(d.utilities_bill)}</td>
+          <td>${fmt(d.security_price)}</td>
+          <td>${fmt(d.fuel_cost)}</td>
+          <td>${fmt(d.insurance_payment)}</td>
+          <td>${fmt(d.tracking_payment)}</td>
+          <td><strong>${fmt(total)}</strong></td>
+          <td>${d._ts.toLocaleString()}</td>
+          <td>
+            <button class="btn btn-yellow" onclick="deleteRecord(${d.id})" style="padding: 5px 8px; font-size: 11px;">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      grandTotalEl.textContent = fmt(grand);
+    }
+
+    function updateChart() {
+      const labels = filteredDocs.map(d => d._ts.toLocaleDateString());
+      const totals = filteredDocs.map(totalOf);
+
+      let datasets;
+      if (chartSelect.value === "all") {
+        datasets = [
+          { label: "Wages", data: filteredDocs.map(d => d.workers_wages||0), backgroundColor: "#3498db" },
+          { label: "Utilities", data: filteredDocs.map(d => d.utilities_bill||0), backgroundColor: "#9b59b6" },
+          { label: "Security", data: filteredDocs.map(d => d.security_price||0), backgroundColor: "#e67e22" },
+          { label: "Fuel", data: filteredDocs.map(d => d.fuel_cost||0), backgroundColor: "#f1c40f" },
+          { label: "Insurance", data: filteredDocs.map(d => d.insurance_payment||0), backgroundColor: "#27ae60" },
+          { label: "Tracking", data: filteredDocs.map(d => d.tracking_payment||0), backgroundColor: "#e74c3c" },
+          { label: "Total", data: totals, backgroundColor: "#2c3e50" }
+        ];
+      } else {
+        const labelText = document.querySelector(`#chartSelect option[value="${chartSelect.value}"]`)?.text || "Selected";
+        datasets = [
+          { label: labelText, data: filteredDocs.map(d => d[chartSelect.value] || 0), backgroundColor: "#3498db" },
+          { label: "Total", data: totals, backgroundColor: "#2c3e50" }
+        ];
+      }
+
+      const ctx = document.getElementById("financialChart");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: "top" } }
+        }
+      });
+    }
+
+    /* CSV Export */
+    function exportCSV() {
+      const headers = [
+        "id", "workers_wages","utilities_bill","security_price",
+        "fuel_cost","insurance_payment","tracking_payment","total","timestamp"
+      ];
+
+      const rows = filteredDocs.map(d => {
+        const total = totalOf(d);
+        return [
+          d.id, d.workers_wages||0, d.utilities_bill||0, d.security_price||0,
+          d.fuel_cost||0, d.insurance_payment||0, d.tracking_payment||0,
+          total, d._ts.toISOString()
+        ];
+      });
+
+      // Add grand total summary row
+      const grand = rows.reduce((acc, r) => acc + Number(r[7] || 0), 0);
+      rows.push(["","","","","","","","GRAND_TOTAL", grand, ""]);
+
+      const toCsvCell = (v) => {
+        const s = String(v ?? "");
+        if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+        return s;
+      };
+
+      const csv = [headers.map(toCsvCell).join(",")]
+        .concat(rows.map(r => r.map(toCsvCell).join(",")))
+        .join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const from = fromDate.value || "start";
+      const to = toDate.value || "end";
+      a.download = `financial_export_${from}_to_${to}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Make deleteRecord available globally
+    window.deleteRecord = deleteRecord;
+
+    // Initial load
+    loadTable();
+  </script>
+</body>
+</html>
+

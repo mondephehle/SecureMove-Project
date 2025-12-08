@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import vs Export Volume Comparison</title>
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 25px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .admin-header h1 {
+            color: #667eea;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-header h1 i {
+            font-size: 36px;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .filter-controls h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .filter-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #5a6268;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .summary-card.import::before {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .summary-card.export::before {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-icon {
+            font-size: 32px;
+            opacity: 0.2;
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .trend.up {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .trend.down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Comparison Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .bar-container {
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bar-fill.import {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .bar-fill.export {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        /* Detailed Table */
+        .details-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .details-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .comparison-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .comparison-table td {
+            color: #555;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .metric-value.import {
+            color: #28a745;
+        }
+
+        .metric-value.export {
+            color: #007bff;
+        }
+
+        .percentage {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .percentage.import-percent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .percentage.export-percent {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .loading i {
+            font-size: 48px;
+            color: #667eea;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-left {
+                flex-direction: column;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 12px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="header-left">
+                <a href="admindashboard.html" class="back-btn">
+                    <i class='bx bx-arrow-back'></i>
+                    Back to Dashboard
+                </a>
+                <h1>
+                    <i class='bx bx-bar-chart-alt-2'></i>
+                    Import vs Export Analysis
+                </h1>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <h3><i class='bx bx-filter'></i> Filter Options</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="time-period">Time Period</label>
+                    <select id="time-period">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month" selected>This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="date-from-group" style="display: none;">
+                    <label for="date-from">From Date</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="filter-group" id="date-to-group" style="display: none;">
+                    <label for="date-to">To Date</label>
+                    <input type="date" id="date-to">
+                </div>
+                <div class="filter-group">
+                    <label for="transport-mode">Transport Mode</label>
+                    <select id="transport-mode">
+                        <option value="all">All Modes</option>
+                        <option value="air">Air Freight</option>
+                        <option value="sea">Sea Freight</option>
+                        <option value="courier">Courier</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending Validation">Pending Validation</option>
+                        <option value="Approved">Approved</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="filter-btn btn-apply" id="apply-filters">
+                    <i class='bx bx-check'></i> Apply Filters
+                </button>
+                <button class="filter-btn btn-reset" id="reset-filters">
+                    <i class='bx bx-reset'></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summary-grid">
+            <div class="loading">
+                <i class='bx bx-loader bx-spin'></i>
+                <p>Loading data...</p>
+            </div>
+        </div>
+
+        <!-- Comparison Charts -->
+        <div class="charts-container" id="charts-container" style="display: none;">
+            <!-- Volume Chart -->
+            <div class="chart-card">
+                <h3><i class='bx bx-package'></i> Shipment Volume Comparison</h3>
+                <div class="bar-chart" id="volume-chart"></div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="chart-card">
+                <h3><i class='bx bx-dollar-circle'></i> Revenue Comparison</h3>
+                <div class="bar-chart" id="revenue-chart"></div>
+            </div>
+        </div>
+
+        <!-- Detailed Comparison Table -->
+        <div class="details-section" id="details-section" style="display: none;">
+            <h3><i class='bx bx-table'></i> Detailed Comparison</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Import</th>
+                        <th>Export</th>
+                        <th>Difference</th>
+                        <th>Distribution</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let importOrders = [];
+        let exportOrders = [];
+        let filteredImports = [];
+        let filteredExports = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAllData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Time period change
+            document.getElementById('time-period').addEventListener('change', function() {
+                const customGroups = document.querySelectorAll('#date-from-group, #date-to-group');
+                if (this.value === 'custom') {
+                    customGroups.forEach(g => g.style.display = 'flex');
+                } else {
+                    customGroups.forEach(g => g.style.display = 'none');
+                }
+            });
+
+            // Apply filters
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            
+            // Reset filters
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        }
+
+        async function loadAllData() {
+            try {
+                // Load Import Orders
+                const importRef = ref(database, 'ImportOrders');
+                const importSnapshot = await get(importRef);
+                
+                if (importSnapshot.exists()) {
+                    importOrders = Object.entries(importSnapshot.val()).map(([key, value]) => ({
+                        id: key,
+                        ...value
+                    }));
+                }
+
+                // Load Export Orders
+                const exportRef = ref(database, 'ExportOrders');
+                const exportSnapshot = await get(exportRef);
+                
+                if (exportSnapshot.exists()) {
+                    exportOrders = Object.entries(exportSnapshot.val()).map(([key, value]) => ({
+                        id: key,
+                        ...value
+                    }));
+                }
+
+                // Initial display with default filters
+                applyFilters();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('summary-grid').innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #dc3545;">
+                        <i class='bx bx-error-circle' style='font-size: 48px;'></i>
+                        <p>Error loading data. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const timePeriod = document.getElementById('time-period').value;
+            const transportMode = document.getElementById('transport-mode').value;
+            const statusFilter = document.getElementById('status-filter').value;
+
+            // Get date range
+            const dateRange = getDateRange(timePeriod);
+
+            // Filter Import Orders
+            filteredImports = importOrders.filter(order => {
+                const orderDate = new Date(order.bookingDate || order.timestamp);
+                const matchesDate = orderDate >= dateRange.start && orderDate <= dateRange.end;
+                const matchesMode = transportMode === 'all' || order.transportMode === transportMode;
+                const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+                
+                return matchesDate && matchesMode && matchesStatus;
+            });
+
+            // Filter Export Orders
+            filteredExports = exportOrders.filter(order => {
+                const orderDate = new Date(order.bookingDate || order.timestamp);
+                const matchesDate = orderDate >= dateRange.start && orderDate <= dateRange.end;
+                const matchesMode = transportMode === 'all' || order.transportMode === transportMode;
+                const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+                
+                return matchesDate && matchesMode && matchesStatus;
+            });
+
+            // Update display
+            displayComparison();
+        }
+
+        function getDateRange(period) {
+            const now = new Date();
+            let start = new Date();
+
+            switch(period) {
+                case 'today':
+                    start.setHours(0, 0, 0, 0);
+                    break;
+                case 'week':
+                    start.setDate(now.getDate() - 7);
+                    break;
+                case 'month':
+                    start.setMonth(now.getMonth() - 1);
+                    break;
+                case 'quarter':
+                    start.setMonth(now.getMonth() - 3);
+                    break;
+                case 'year':
+                    start.setFullYear(now.getFullYear() - 1);
+                    break;
+                case 'custom':
+                    const fromDate = document.getElementById('date-from').value;
+                    const toDate = document.getElementById('date-to').value;
+                    if (fromDate && toDate) {
+                        return {
+                            start: new Date(fromDate),
+                            end: new Date(toDate)
+                        };
+                    }
+                    start = new Date(0);
+                    break;
+                default:
+                    start = new Date(0);
+            }
+
+            return { start, end: now };
+        }
+
+        function resetFilters() {
+            document.getElementById('time-period').value = 'month';
+            document.getElementById('transport-mode').value = 'all';
+            document.getElementById('status-filter').value = 'all';
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.querySelectorAll('#date-from-group, #date-to-group').forEach(g => g.style.display = 'none');
+            applyFilters();
+        }
+
+        function displayComparison() {
+            // Calculate metrics
+            const importCount = filteredImports.length;
+            const exportCount = filteredExports.length;
+            const totalCount = importCount + exportCount;
+
+            const importRevenue = calculateRevenue(filteredImports);
+            const exportRevenue = calculateRevenue(filteredExports);
+            const totalRevenue = importRevenue + exportRevenue;
+
+            const importWeight = calculateTotalWeight(filteredImports);
+            const exportWeight = calculateTotalWeight(filteredExports);
+
+            // Display summary cards
+            displaySummaryCards({
+                importCount,
+                exportCount,
+                totalCount,
+                importRevenue,
+                exportRevenue,
+                totalRevenue,
+                importWeight,
+                exportWeight
+            });
+
+            // Display charts
+            displayCharts({
+                importCount,
+                exportCount,
+                importRevenue,
+                exportRevenue,
+                importWeight,
+                exportWeight
+            });
+
+            // Display detailed table
+            displayDetailedTable({
+                importCount,
+                exportCount,
+                totalCount,
+                importRevenue,
+                exportRevenue,
+                totalRevenue,
+                importWeight,
+                exportWeight
+            });
+
+            // Show sections
+            document.getElementById('charts-container').style.display = 'grid';
+            document.getElementById('details-section').style.display = 'block';
+        }
+
+        function calculateRevenue(orders) {
+            return orders.reduce((sum, order) => {
+                if (order.pricing?.total) {
+                    const amount = parseFloat(order.pricing.total.replace(/[R,\s]/g, ''));
+                    return sum + (isNaN(amount) ? 0 : amount);
+                }
+                return sum;
+            }, 0);
+        }
+
+        function calculateTotalWeight(orders) {
+            return orders.reduce((sum, order) => {
+                const weight = parseFloat(order.weight) || 0;
+                return sum + weight;
+            }, 0);
+        }
+
+        function displaySummaryCards(metrics) {
+            const importPercentage = metrics.totalCount > 0 ? ((metrics.importCount / metrics.totalCount) * 100).toFixed(1) : 0;
+            const exportPercentage = metrics.totalCount > 0 ? ((metrics.exportCount / metrics.totalCount) * 100).toFixed(1) : 0;
+
+            document.getElementById('summary-grid').innerHTML = `
+                <div class="summary-card total">
+                    <div class="card-header">
+                        <span class="card-title">Total Shipments</span>
+                        <i class='bx bx-package card-icon'></i>
+                    </div>
+                    <div class="card-value">${metrics.totalCount}</div>
+                    <div class="card-subtitle">Combined Import & Export</div>
+                </div>
+
+                <div class="summary-card import">
+                    <div class="card-header">
+                        <span class="card-title">Import Shipments</span>
+                        <i class='bx bx-import card-icon'></i>
+                    </div>
+                    <div class="card-value">${metrics.importCount}</div>
+                    <div class="card-subtitle">${importPercentage}% of total volume</div>
+                    <span class="trend ${metrics.importCount > metrics.exportCount ? 'up' : 'down'}">
+                        <i class='bx ${metrics.importCount > metrics.exportCount ? 'bx-trending-up' : 'bx-trending-down'}'></i>
+                        ${metrics.importCount > metrics.exportCount ? 'Leading' : 'Behind'}
+                    </span>
+                </div>
+
+                <div class="summary-card export">
+                    <div class="card-header">
+                        <span class="card-title">Export Shipments</span>
+                        <i class='bx bx-export card-icon'></i>
+                    </div>
+                    <div class="card-value">${metrics.exportCount}</div>
+                    <div class="card-subtitle">${exportPercentage}% of total volume</div>
+                    <span class="trend ${metrics.exportCount > metrics.importCount ? 'up' : 'down'}">
+                        <i class='bx ${metrics.exportCount > metrics.importCount ? 'bx-trending-up' : 'bx-trending-down'}'></i>
+                        ${metrics.exportCount > metrics.importCount ? 'Leading' : 'Behind'}
+                    </span>
+                </div>
+
+                <div class="summary-card total">
+                    <div class="card-header">
+                        <span class="card-title">Total Revenue</span>
+                        <i class='bx bx-dollar-circle card-icon'></i>
+                    </div>
+                    <div class="card-value">R ${metrics.totalRevenue.toLocaleString()}</div>
+                    <div class="card-subtitle">Combined Revenue</div>
+                </div>
+
+                <div class="summary-card import">
+                    <div class="card-header">
+                        <span class="card-title">Import Revenue</span>
+                        <i class='bx bx-money card-icon'></i>
+                    </div>
+                    <div class="card-value">R ${metrics.importRevenue.toLocaleString()}</div>
+                    <div class="card-subtitle">${metrics.totalRevenue > 0 ? ((metrics.importRevenue / metrics.totalRevenue) * 100).toFixed(1) : 0}% of total</div>
+                </div>
+
+                <div class="summary-card export">
+                    <div class="card-header">
+                        <span class="card-title">Export Revenue</span>
+                        <i class='bx bx-money card-icon'></i>
+                    </div>
+                    <div class="card-value">R ${metrics.exportRevenue.toLocaleString()}</div>
+                    <div class="card-subtitle">${metrics.totalRevenue > 0 ? ((metrics.exportRevenue / metrics.totalRevenue) * 100).toFixed(1) : 0}% of total</div>
+                </div>
+            `;
+        }
+
+        function displayCharts(metrics) {
+            const maxCount = Math.max(metrics.importCount, metrics.exportCount);
+            const maxRevenue = Math.max(metrics.importRevenue, metrics.exportRevenue);
+
+            // Volume Chart
+            document.getElementById('volume-chart').innerHTML = `
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>Import Shipments</span>
+                        <span>${metrics.importCount}</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill import" style="width: ${maxCount > 0 ? (metrics.importCount / maxCount * 100) : 0}%">
+                            ${metrics.importCount}
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>Export Shipments</span>
+                        <span>${metrics.exportCount}</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill export" style="width: ${maxCount > 0 ? (metrics.exportCount / maxCount * 100) : 0}%">
+                            ${metrics.exportCount}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Revenue Chart
+document.getElementById('revenue-chart').innerHTML = `
+    <div class="bar-item">
+        <div class="bar-label">
+            <span>Import Revenue</span>
+            <span>R ${metrics.importRevenue.toLocaleString()}</span>
+        </div>
+        <div class="bar-container">
+            <div class="bar-fill import" style="width: ${maxRevenue > 0 ? (metrics.importRevenue / maxRevenue * 100) : 0}%">
+                R ${metrics.importRevenue.toLocaleString()}
+            </div>
+        </div>
+    </div>
+    <div class="bar-item">
+        <div class="bar-label">
+            <span>Export Revenue</span>
+            <span>R ${metrics.exportRevenue.toLocaleString()}</span>
+        </div>
+        <div class="bar-container">
+            <div class="bar-fill export" style="width: ${maxRevenue > 0 ? (metrics.exportRevenue / maxRevenue * 100) : 0}%">
+                R ${metrics.exportRevenue.toLocaleString()}
+            </div>
+        </div>
+    </div>
+`;
+        function displayDetailedTable(metrics) {
+    const tbody = document.getElementById('comparison-tbody');
+    const diffCount = metrics.importCount - metrics.exportCount;
+    const diffRevenue = metrics.importRevenue - metrics.exportRevenue;
+    const total = metrics.importCount + metrics.exportCount;
+
+    const importDist = total > 0 ? ((metrics.importCount / total) * 100).toFixed(1) : 0;
+    const exportDist = total > 0 ? ((metrics.exportCount / total) * 100).toFixed(1) : 0;
+
+    tbody.innerHTML = `
+        <tr>
+            <td>Shipment Volume</td>
+            <td class="metric-value import">${metrics.importCount}</td>
+            <td class="metric-value export">${metrics.exportCount}</td>
+            <td>${diffCount > 0 ? `+${diffCount}` : diffCount}</td>
+            <td>
+                <span class="percentage import-percent">${importDist}%</span>
+                <span class="percentage export-percent">${exportDist}%</span>
+            </td>
+        </tr>
+        <tr>
+            <td>Total Revenue</td>
+            <td class="metric-value import">R ${metrics.importRevenue.toLocaleString()}</td>
+            <td class="metric-value export">R ${metrics.exportRevenue.toLocaleString()}</td>
+            <td>R ${diffRevenue > 0 ? `+${diffRevenue.toLocaleString()}` : diffRevenue.toLocaleString()}</td>
+            <td>
+                <span class="percentage import-percent">${metrics.totalRevenue > 0 ? ((metrics.importRevenue / metrics.totalRevenue) * 100).toFixed(1) : 0}%</span>
+                <span class="percentage export-percent">${metrics.totalRevenue > 0 ? ((metrics.exportRevenue / metrics.totalRevenue) * 100).toFixed(1) : 0}%</span>
+            </td>
+        </tr>
+    `;
+}
+        }

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Reports</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 { font-size: 2rem; margin-bottom: 10px; font-weight: 300; }
+    .header p { opacity: 0.9; font-size: 1rem; }
+    .controls {
+      padding: 20px; background:#f8f9fa; border-bottom:1px solid #e9ecef;
+      display:flex; flex-wrap:wrap; gap:15px; align-items:center; justify-content:center;
+    }
+    .form-group { display:flex; flex-direction:column; }
+    label { margin-bottom:6px; font-weight:600; font-size:0.9rem; color:#2c3e50; }
+    input, select {
+      padding:10px 14px; border:2px solid #e9ecef; border-radius:8px;
+      font-size:13px; transition:all .3s ease;
+    }
+    input:focus, select:focus { outline:none; border-color:#3498db; box-shadow:0 0 0 3px rgba(52,152,219,.1); }
+    .btn {
+      background:linear-gradient(135deg,#3498db,#2980b9); color:white; border:none;
+      padding:10px 20px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;
+    }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 8px 16px rgba(52,152,219,.3); }
+    .report-content { padding:30px; }
+    .metrics-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px; margin-bottom:25px;
+    }
+    .metric-card {
+      background:white; padding:20px; border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.08); border-left:4px solid #3498db;
+    }
+    .metric-card h3 { font-size:0.8rem; margin-bottom:8px; color:#7f8c8d; text-transform:uppercase; }
+    .metric-value { font-size:1.4rem; font-weight:bold; color:#2c3e50; }
+    .chart-container {
+      background:white; padding:25px; border-radius:12px; margin-bottom:25px;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      height: 350px;
+    }
+    .chart-title { font-size:1.3rem; margin-bottom:15px; text-align:center; color:#2c3e50; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.08); }
+    th, td { border-bottom:1px solid #e9ecef; padding:12px 15px; text-align:left; font-size:0.9rem; }
+    th { background:linear-gradient(135deg,#2c3e50,#3498db); color:white; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    .loading { text-align:center; padding:40px; color:#7f8c8d; }
+    .spinner {
+      border:3px solid #f3f3f3; border-top:3px solid #3498db;
+      border-radius:50%; width:30px; height:30px; animation:spin 1s linear infinite; margin:0 auto 15px;
+    }
+    @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+    .database-status { padding:10px 15px; border-radius:8px; margin:15px; font-size:0.9rem; text-align:center; }
+    .database-status.connected { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .database-status.disconnected { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    .database-status.connecting { background:#fff3cd; color:#856404; border:1px solid #ffeaa7; }
+    .debug-info { background:#f8f9fa; padding:15px; margin:15px; border-radius:8px; font-size:0.85rem; max-height: 150px; overflow-y: auto; }
+    .error { background:#f8d7da; color:#721c24; padding:15px; margin:15px; border-radius:8px; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Financial Reports</h1>
+      <p>Income vs Expenditure Analysis with Date Filtering</p>
+        <a href="finance.html" class="btn" style="margin-right:15px; display:inline-block;">Advance analytics </a>
+    </div>
+
+    <div class="controls">
+      <div class="form-group">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="form-group">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate">
+      </div>
+      <div class="form-group">
+        <label for="reportType">Report Type</label>
+        <select id="reportType">
+          <option value="summary">Summary Report</option>
+          <option value="detailed">Detailed Expenses</option>
+          <option value="incomeVsExpense">Income vs Expenditure</option>
+        </select>
+      </div>
+      <button class="btn" onclick="generateReport()">Generate Report</button>
+      <button class="btn" onclick="testConnection()" style="background:linear-gradient(135deg, #17a2b8, #138496);">Test Connection</button>
+    </div>
+
+    <div id="databaseStatus" class="database-status connecting">🟡 Connecting...</div>
+    <div id="debugInfo" class="debug-info" style="display:none;"></div>
+    <div id="errorInfo" class="error" style="display:none;"></div>
+    
+    <div class="report-content" id="reportContent">
+      <div class="loading"><div class="spinner"></div><p>Click "Generate Report" or "Test Connection"</p></div>
+    </div>
+  </div>
+
+<script>
+  const expenseFieldAliases = {
+    'fuel_cost': 'Fuel Cost',
+    'workers_wages':'Worker Wages',
+    'insurance_payment': 'Insurance',
+    'security_price': 'Security',
+    'tracking_payment': 'Vehicle Tracking Services',
+    'utilities_bill': 'Utilities'
+ 
+  };
+
+  let db;
+  let chart = null;
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    console.log("Firebase initialized successfully");
+    updateStatus("connecting", "🟡 Firebase initialized, testing connection...");
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+    updateStatus("disconnected", "🔴 Firebase initialization failed");
+    showError("Firebase initialization failed: " + error.message);
+  }
+
+  function updateStatus(type, message) {
+    document.getElementById("databaseStatus").className = `database-status ${type}`;
+    document.getElementById("databaseStatus").innerHTML = message;
+  }
+
+  function showError(message) {
+    const errorEl = document.getElementById("errorInfo");
+    errorEl.style.display = "block";
+    errorEl.innerHTML = `<strong>Error:</strong> ${message}`;
+  }
+
+  function showDebug(message) {
+    const debugEl = document.getElementById("debugInfo");
+    if(debugEl.innerHTML.length > 2000) debugEl.innerHTML = '';
+    debugEl.style.display = "block";
+    debugEl.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+  }
+
+  async function testConnection() {
+    try {
+      updateStatus("connecting", "🟡 Testing database connection...");
+      showDebug("Testing connection to Firebase...");
+      
+      const testRef = db.ref('.info/connected');
+      const connected = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("Connection timeout")), 10000);
+        testRef.once('value', snapshot => {
+          clearTimeout(timeout);
+          resolve(snapshot.val());
+        }, error => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+      });
+
+      if (connected) {
+        updateStatus("connected", "🟢 Connected to Firebase");
+        showDebug("Connection successful! Loading data to verify paths...");
+        await loadData();
+      } else {
+        updateStatus("disconnected", "🔴 Not connected to Firebase");
+        showDebug("Connection failed - not connected");
+      }
+    } catch (error) {
+      console.error("Connection test failed:", error);
+      updateStatus("disconnected", "🔴 Connection failed");
+      showError("Connection test failed: " + error.message);
+      showDebug("Connection error: " + error.message);
+    }
+  }
+  
+  async function loadData() {
+    try {
+      updateStatus("connecting", "🟡 Loading data...");
+      showDebug("Fetching data from all paths...");
+
+      const paths = ["Orders", "StorageBookings", "financial_info"];
+      const promises = paths.map(path => 
+        db.ref(path).once("value").catch(err => {
+          showError(`Failed to fetch from path: ${path}. Error: ${err.message}`);
+          return { val: () => null };
+        })
+      );
+      
+      const [ordersSnap, storageSnap, expensesSnap] = await Promise.all(promises);
+
+      const data = {
+        orders: ordersSnap.val() || {},
+        storage: storageSnap.val() || {},
+        expenses: expensesSnap.val() || {}
+      };
+
+      showDebug(`Loaded ${Object.keys(data.orders).length} records from 'Orders'`);
+      showDebug(`Loaded ${Object.keys(data.storage).length} records from 'StorageBookings'`);
+      showDebug(`Loaded ${Object.keys(data.expenses).length} records from 'financial_info'`);
+
+      if (Object.keys(data.orders).length === 0 && Object.keys(data.storage).length === 0 && Object.keys(data.expenses).length === 0) {
+        showError("Warning: Loaded 0 records from all paths. Verify your database paths ('Orders', 'StorageBookings', 'financial_info') and database security rules.");
+        updateStatus("connected", "🟡 Data loaded, but all paths are empty.");
+      } else {
+        updateStatus("connected", "🟢 Data loaded successfully");
+      }
+      return data;
+    } catch (error) {
+      updateStatus("disconnected", "🔴 Failed to load data");
+      showError("Failed to load data: " + error.message);
+      throw error;
+    }
+  }
+
+  function inRange(dateValue, startDate, endDate) {
+    if (!dateValue) return false;
+    
+    const t = new Date(dateValue).getTime();
+    if (isNaN(t)) return false;
+
+    const start = startDate ? new Date(startDate).getTime() : 0;
+    const end = endDate ? new Date(endDate + "T23:59:59").getTime() : Infinity;
+
+    return t >= start && t <= end;
+  }
+
+  // --- *** FINAL CORRECTION IS APPLIED HERE *** ---
+  function calcTotals(data, startDate, endDate) {
+    let ordersRev = 0, storageRev = 0, totalExp = 0;
+    let expenseTotals = {};
+
+    // Process Orders: Uses 'pickup_date' for date filtering.
+    Object.values(data.orders).forEach(o => {
+      if (o && inRange(o.pickup_date, startDate, endDate)) {
+        ordersRev += Number(o.total_price || 0);
+      }
+    });
+
+    // Process Storage Bookings: Uses 'bookingDate' for date filtering.
+    Object.values(data.storage).forEach(s => {
+      if (s && inRange(s.bookingDate, startDate, endDate)) {
+        storageRev += Number(s.totalPrice || 0);
+      }
+    });
+
+    // Process Expenses: Assumes 'timestamp' field.
+    Object.values(data.expenses).forEach(e => {
+      if (e && inRange(e.timestamp, startDate, endDate)) {
+        Object.entries(e).forEach(([key, value]) => {
+          const displayName = expenseFieldAliases[key];
+          if (displayName) {
+            const numValue = Number(value || 0);
+            expenseTotals[displayName] = (expenseTotals[displayName] || 0) + numValue;
+          }
+        });
+      }
+    });
+    
+    totalExp = Object.values(expenseTotals).reduce((sum, val) => sum + val, 0);
+    return { ordersRev, storageRev, expenseTotals, totalExp };
+  }
+
+  function renderSummary(totals) {
+    const content = document.getElementById("reportContent");
+    const income = totals.ordersRev + totals.storageRev;
+    const profit = income - totals.totalExp;
+    
+    content.innerHTML = `
+      <div class="metrics-grid">
+        <div class="metric-card"><h3>Total Income</h3><div class="metric-value">R ${income.toLocaleString()}</div></div>
+        <div class="metric-card"><h3>Total Expenses</h3><div class="metric-value">R ${totals.totalExp.toLocaleString()}</div></div>
+        <div class="metric-card"><h3>Net Profit</h3><div class="metric-value" style="color:${profit >= 0 ? '#2ecc71' : '#e74c3c'}">R ${profit.toLocaleString()}</div></div>
+      </div>
+      <div class="chart-container"><h3 class="chart-title">Income vs Expenses</h3><canvas id="chart"></canvas></div>
+    `;
+    drawChart(["Income", "Expenses"], [income, totals.totalExp], ["#2ecc71", "#e74c3c"]);
+  }
+
+  function renderDetailed(totals) {
+    const content = document.getElementById("reportContent");
+    let rows = "";
+    
+    const sortedExpenses = Object.entries(totals.expenseTotals).sort(([,a],[,b]) => b-a);
+    
+    if (sortedExpenses.length === 0) {
+      rows = '<tr><td colspan="2">No expense data found for the selected period.</td></tr>';
+    } else {
+      sortedExpenses.forEach(([category, amount]) => {
+        rows += `<tr><td>${category}</td><td>R ${amount.toLocaleString()}</td></tr>`;
+      });
+    }
+    
+    content.innerHTML = `
+      <div class="chart-container"><h3 class="chart-title">Expense Breakdown</h3><canvas id="chart"></canvas></div>
+      <table><thead><tr><th>Expense Category</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
+    `;
+    
+    if (sortedExpenses.length > 0) {
+      const labels = sortedExpenses.map(item => item[0]);
+      const data = sortedExpenses.map(item => item[1]);
+      drawChart(labels, data);
+    }
+  }
+
+  function renderIncomeVsExpense(totals) {
+    const content = document.getElementById("reportContent");
+    content.innerHTML = `
+      <div class="metrics-grid">
+        <div class="metric-card"><h3>Orders Revenue</h3><div class="metric-value">R ${totals.ordersRev.toLocaleString()}</div></div>
+        <div class="metric-card"><h3>Storage Revenue</h3><div class="metric-value">R ${totals.storageRev.toLocaleString()}</div></div>
+        <div class="metric-card"><h3>Total Expenses</h3><div class="metric-value">R ${totals.totalExp.toLocaleString()}</div></div>
+      </div>
+      <div class="chart-container"><h3 class="chart-title">Income vs Expenses Breakdown</h3><canvas id="chart"></canvas></div>
+    `;
+    drawChart(["Orders", "Storage", "Expenses"], [totals.ordersRev, totals.storageRev, totals.totalExp], ["#3498db", "#2ecc71", "#e74c3c"]);
+  }
+
+  function drawChart(labels, data, colors) {
+    const ctx = document.getElementById("chart");
+    if (!ctx) return;
+    if (chart) chart.destroy();
+    
+    chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors || ["#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6", "#1abc9c", "#e67e22"],
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: value => 'R ' + value.toLocaleString() } } }
+      }
+    });
+  }
+
+  async function generateReport() {
+    try {
+      document.getElementById("errorInfo").style.display = "none";
+      document.getElementById("reportContent").innerHTML = `<div class="loading"><div class="spinner"></div><p>Generating Report...</p></div>`;
+
+      const data = await loadData();
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const totals = calcTotals(data, startDate, endDate);
+      
+      const type = document.getElementById("reportType").value;
+      if (type === "summary") renderSummary(totals);
+      if (type === "detailed") renderDetailed(totals);
+      if (type === "incomeVsExpense") renderIncomeVsExpense(totals);
+      
+    } catch (error) {
+      console.error("Generate report error:", error);
+      showError("Failed to generate report: " + error.message);
+    }
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(testConnection, 500);
+  });
+</script>
+</body>
+</html>
+

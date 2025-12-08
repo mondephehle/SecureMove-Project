@@ -1,0 +1,529 @@
+Driversubmission
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Driver Submissions</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root {
+      --primary-color: #002fff;
+      --secondary-color: #00bbff;
+      --success-color: #4CAF50;
+      --warning-color: #FFC107;
+      --danger-color: #F44336;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --medium-gray: #e0e0e0;
+      --dark-gray: #666;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+  
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      color: var(--text-color);
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    .back-btn:hover {
+      background-color: #0015a5;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  
+    .back-btn i {
+      font-size: 14px;
+    }
+  
+    h1 {
+      color: var(--primary-color);
+      margin: 0 0 30px 0;
+      font-size: 2rem;
+      font-weight: 700;
+      position: relative;
+      padding-bottom: 10px;
+    }
+  
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: var(--secondary-color);
+      border-radius: 2px;
+    }
+  
+    .section {
+      margin-bottom: 40px;
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+    }
+  
+    .section-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--medium-gray);
+    }
+  
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  
+    .section-header i {
+      font-size: 1.3rem;
+      color: var(--secondary-color);
+    }
+  
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+  
+    .card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      border: 1px solid var(--medium-gray);
+    }
+  
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+  
+    .proof-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-bottom: 1px solid var(--medium-gray);
+      cursor: pointer;
+    }
+  
+    .card-content {
+      padding: 16px;
+    }
+  
+    .card-meta {
+      font-size: 14px;
+      color: var(--dark-gray);
+      margin-bottom: 12px;
+    }
+  
+    .card-meta p {
+      margin: 5px 0;
+    }
+  
+    .card-meta strong {
+      color: var(--text-color);
+    }
+  
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  
+    .status-delivered {
+      background-color: var(--success-color);
+      color: white;
+    }
+  
+    .status-pending {
+      background-color: var(--warning-color);
+      color: black;
+    }
+  
+    .status-failed {
+      background-color: var(--danger-color);
+      color: white;
+    }
+  
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+  
+    .btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+  
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+  
+    .btn-primary:hover {
+      background-color: #001acc;
+    }
+  
+    .btn-secondary {
+      background-color: var(--dark-gray);
+      color: white;
+    }
+  
+    .btn-secondary:hover {
+      background-color: #555;
+    }
+  
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+      cursor: default;
+    }
+  
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--dark-gray);
+      font-style: italic;
+      grid-column: 1 / -1;
+    }
+  
+    @media (max-width: 768px) {
+      .cards-container {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .section-header h2 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="admindashboard.html" class="back-btn">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+  
+  <h1>Driver Submissions</h1>
+  
+  <!-- Proof of Deliveries Section -->
+  <div class="section">
+    <div class="section-header">
+      <h2><i class="fas fa-camera"></i> Proof of Deliveries</h2>
+    </div>
+    
+    <div class="cards-container" id="proofsContainer">
+      <div class="empty-state">Loading proof of deliveries...</div>
+    </div>
+  </div>
+  
+  <!-- Logged Incidents Section -->
+  <div class="section">
+    <div class="section-header">
+      <h2><i class="fas fa-exclamation-triangle"></i> Logged Incidents</h2>
+    </div>
+    
+    <div class="cards-container" id="incidentsContainer">
+      <div class="empty-state">Loading incidents...</div>
+    </div>
+  </div>
+  
+  <!-- Vehicle Issues Section -->
+  <div class="section">
+    <div class="section-header">
+      <h2><i class="fas fa-truck"></i> Vehicle Issues</h2>
+    </div>
+    
+    <div class="cards-container" id="issuesContainer">
+      <div class="empty-state">Loading vehicle issues...</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
+  
+
+  <script>
+  
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const auth = firebase.auth();
+
+    // Check authentication state
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+      } else {
+        loadAllSubmissions();
+      }
+    });
+
+    function loadAllSubmissions() {
+      loadProofs();
+      loadIncidents();
+      loadVehicleIssues();
+    }
+
+    function loadProofs() {
+      const proofsContainer = document.getElementById("proofsContainer");
+      
+      database.ref("proofs").orderByChild("timestamp").on("value", (snapshot) => {
+        proofsContainer.innerHTML = "";
+        const data = snapshot.val();
+
+        if (data) {
+          Object.entries(data).forEach(([key, entry]) => {
+            const time = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "Time unknown";
+            const user = entry.driverEmail || "Unknown driver";
+            const note = entry.note ? entry.note : "No additional notes";
+            const status = entry.status || "unknown";
+            
+            const statusClass = status.toLowerCase().includes("delivered") ? "status-delivered" : 
+                              status.toLowerCase().includes("partially") ? "status-pending" :
+                              status.toLowerCase().includes("failed") ? "status-failed" : "";
+            
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <img src="${entry.imageUrl}" alt="Proof of delivery" class="proof-image" 
+                  onclick="window.open('${entry.imageUrl}', '_blank')">
+              <div class="card-content">
+                <div class="card-meta">
+                  <p><strong>Driver:</strong> ${user}</p>
+                  <p><strong>Submitted:</strong> ${time}</p>
+                  <p><strong>Status:</strong> ${status} <span class="status-badge ${statusClass}">${status}</span></p>
+                  ${note ? `<p><strong>Note:</strong> ${note}</p>` : ''}
+                </div>
+                <div class="card-actions">
+                  <button id="verify-${key}" onclick="markAsVerified('${key}', this)" 
+                    class="btn ${entry.verified ? 'btn-success' : 'btn-primary'}">
+                    <i class="fas fa-${entry.verified ? 'check' : 'clipboard-check'}"></i>
+                    ${entry.verified ? 'Verified' : 'Mark as Verified'}
+                  </button>
+                  <button class="btn btn-secondary" onclick="notifyCustomer('Proof of Delivery', '${status}', '${note}')">
+                    <i class="fas fa-envelope"></i> Notify
+                  </button>
+                </div>
+              </div>
+            `;
+            proofsContainer.appendChild(card);
+          });
+        } else {
+          proofsContainer.innerHTML = '<div class="empty-state">No proof of deliveries found.</div>';
+        }
+      }, (error) => {
+        proofsContainer.innerHTML = `<div class="empty-state">Error loading proof of deliveries: ${error.message}</div>`;
+      });
+    }
+
+    function loadIncidents() {
+      const incidentsContainer = document.getElementById("incidentsContainer");
+      
+      database.ref("incidents").orderByChild("timestamp").on("value", (snapshot) => {
+        incidentsContainer.innerHTML = "";
+        const data = snapshot.val();
+
+        if (data) {
+          Object.entries(data).forEach(([key, entry]) => {
+            const time = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "Time unknown";
+            const user = entry.driverEmail || "Unknown driver";
+            const type = entry.type || "No type specified";
+            const desc = entry.description || "No description provided";
+            
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <div class="card-content">
+                <h3 style="margin-top: 0; color: var(--primary-color);">${type}</h3>
+                <div class="card-meta">
+                  <p>${desc}</p>
+                  <p><strong>Reported by:</strong> ${user}</p>
+                  <p><strong>Submitted:</strong> ${time}</p>
+                </div>
+                <div class="card-actions">
+                  <button id="resolve-incident-${key}" onclick="resolveEntry('incidents', '${key}', this)" 
+                    class="btn ${entry.resolved ? 'btn-success' : 'btn-primary'}">
+                    <i class="fas fa-${entry.resolved ? 'check' : 'clipboard-check'}"></i>
+                    ${entry.resolved ? 'Resolved' : 'Mark as Resolved'}
+                  </button>
+                  <button class="btn btn-secondary" onclick="notifyCustomer('Incident', '${type}', '${desc}')">
+                    <i class="fas fa-envelope"></i> Notify
+                  </button>
+                </div>
+              </div>
+            `;
+            incidentsContainer.appendChild(card);
+          });
+        } else {
+          incidentsContainer.innerHTML = '<div class="empty-state">No incidents found.</div>';
+        }
+      }, (error) => {
+        incidentsContainer.innerHTML = `<div class="empty-state">Error loading incidents: ${error.message}</div>`;
+      });
+    }
+
+    function loadVehicleIssues() {
+      const issuesContainer = document.getElementById("issuesContainer");
+      
+      database.ref("vehicle_issues").orderByChild("timestamp").on("value", (snapshot) => {
+        issuesContainer.innerHTML = "";
+        const data = snapshot.val();
+
+        if (data) {
+          Object.entries(data).forEach(([key, entry]) => {
+            const time = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "Time unknown";
+            const user = entry.driverEmail || "Unknown driver";
+            const type = entry.type || "No type specified";
+            const desc = entry.description || "No description provided";
+            
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <div class="card-content">
+                <h3 style="margin-top: 0; color: var(--primary-color);">${type}</h3>
+                <div class="card-meta">
+                  <p>${desc}</p>
+                  <p><strong>Reported by:</strong> ${user}</p>
+                  <p><strong>Submitted:</strong> ${time}</p>
+                </div>
+                <div class="card-actions">
+                  <button id="resolve-issue-${key}" onclick="resolveEntry('vehicle_issues', '${key}', this)" 
+                    class="btn ${entry.resolved ? 'btn-success' : 'btn-primary'}">
+                    <i class="fas fa-${entry.resolved ? 'check' : 'clipboard-check'}"></i>
+                    ${entry.resolved ? 'Resolved' : 'Mark as Resolved'}
+                  </button>
+                  <button class="btn btn-secondary" onclick="notifyCustomer('Vehicle Issue', '${type}', '${desc}')">
+                    <i class="fas fa-envelope"></i> Notify
+                  </button>
+                </div>
+              </div>
+            `;
+            issuesContainer.appendChild(card);
+          });
+        } else {
+          issuesContainer.innerHTML = '<div class="empty-state">No vehicle issues found.</div>';
+        }
+      }, (error) => {
+        issuesContainer.innerHTML = `<div class="empty-state">Error loading vehicle issues: ${error.message}</div>`;
+      });
+    }
+
+    function markAsVerified(proofId, buttonElement) {
+      if (confirm("Mark this proof of delivery as verified?")) {
+        database.ref(`proofs/${proofId}`).update({
+          verified: true,
+          verifiedAt: Date.now()
+        }).then(() => {
+          buttonElement.innerHTML = '<i class="fas fa-check"></i> Verified';
+          buttonElement.className = 'btn btn-success';
+        }).catch(error => {
+          console.error("Error verifying proof:", error);
+          alert("Failed to verify proof. Please try again.");
+        });
+      }
+    }
+
+    function resolveEntry(refPath, entryId, buttonElement) {
+      const entryType = refPath === 'incidents' ? 'incident' : 'vehicle issue';
+      if (confirm(`Mark this ${entryType} as resolved?`)) {
+        database.ref(`${refPath}/${entryId}`).update({
+          resolved: true,
+          resolvedAt: Date.now()
+        }).then(() => {
+          buttonElement.innerHTML = '<i class="fas fa-check"></i> Resolved';
+          buttonElement.className = 'btn btn-success';
+        }).catch(error => {
+          console.error("Error resolving entry:", error);
+          alert(`Failed to mark ${entryType} as resolved. Please try again.`);
+        });
+      }
+    }
+
+    function notifyCustomer(category, type, description) {
+      const email = prompt("Enter customer email:");
+      if (!email) return;
+      
+      // Basic email validation
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return alert("Please enter a valid email address.");
+      }
+
+      const name = prompt("Enter customer name:");
+      if (!name) return;
+
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      const params = {
+        to_name: name,
+        email: email,
+        category: category,
+        type: type,
+        description: description
+      };
+
+      emailjs.send("service_optu1wc", "template_8o6purq", params)
+        .then(() => {
+          alert("Notification email sent successfully!");
+          btn.innerHTML = '<i class="fas fa-envelope"></i> Notify';
+          btn.disabled = false;
+        })
+        .catch(err => {
+          console.error("Email send error:", err);
+          alert("Failed to send notification. Please try again later.");
+          btn.innerHTML = '<i class="fas fa-envelope"></i> Notify';
+          btn.disabled = false;
+        });
+    }
+  </script>
+</body>
+</html>
+

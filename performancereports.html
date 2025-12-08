@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Performance Reports</title>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+ <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+   :root {
+     --main-color: #002fff;
+     --second-color: #00bbff;
+     --text-color: #333;
+     --bg-gradient: linear-gradient(to right, #002fff, #00bbff);
+   }
+   body {
+     margin: 0;
+     font-family: 'Poppins', sans-serif;
+     background: #f0f4f8;
+     color: var(--text-color);
+   }
+   header {
+     background: var(--bg-gradient);
+     color: white;
+     padding: 20px;
+     text-align: center;
+   }
+   header h1 {
+     margin: 0;
+     font-size: 2rem;
+   }
+   .dashboard {
+     max-width: 1100px;
+     margin: 40px auto;
+     padding: 20px;
+     background: white;
+     border-radius: 15px;
+     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   }
+   .dashboard h2 {
+     color: var(--main-color);
+     margin-bottom: 20px;
+     text-align: center;
+   }
+   .category-controls {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     gap: 20px;
+     margin-bottom: 18px;
+     flex-wrap: wrap;
+   }
+   .category-label {
+     font-weight: 600;
+   }
+   .category-select {
+     padding: 8px 14px;
+     border-radius: 8px;
+     border: 1px solid #adb5bd;
+     background: #f4f7ff;
+     font-size: 1rem;
+     transition: border-color 0.2s;
+   }
+   .category-select:focus {
+     border-color: #002fff;
+     outline: none;
+   }
+   .compare-cards-row {
+     display: flex;
+     gap: 32px;
+     justify-content: center;
+     align-items: stretch;
+     flex-wrap: wrap;
+     margin-bottom: 12px;
+   }
+   .metric-card {
+     background: var(--bg-gradient);
+     color: white;
+     border-radius: 18px;
+     flex: 1 1 380px;
+     min-width: 320px;
+     max-width: 420px;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+     padding: 22px 18px 18px 18px;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     margin: 0 0 18px 0;
+     transition: transform 0.2s;
+   }
+   .metric-card h3 {
+     margin: 0 0 10px 0;
+     font-size: 1.15rem;
+     font-weight: 600;
+     letter-spacing: 0.5px;
+     text-align: center;
+   }
+   .metric-card .month-title {
+     font-size: 1.1rem;
+     font-weight: 400;
+     margin-top: 2px;
+     margin-bottom: 8px;
+     text-align: center;
+     letter-spacing: 0.2px;
+   }
+   .month-dropdown-wrap, .vehicle-dropdown-wrap {
+     width: 100%;
+     display: flex;
+     justify-content: center;
+     margin-bottom: 10px;
+   }
+   .month-dropdown, .vehicle-dropdown {
+     padding: 6px 12px;
+     border-radius: 8px;
+     border: 1px solid #adb5bd;
+     background: #f4f7ff;
+     font-size: 1rem;
+     margin-bottom: 3px;
+     color: #333;
+     min-width: 160px;
+     outline: none;
+   }
+   .metric-graph-box {
+     background: rgba(255,255,255,0.12);
+     border-radius: 10px;
+     width: 100%;
+     max-width: 340px;
+     margin-bottom: 10px;
+     padding: 8px 2px 8px 2px;
+   }
+   .metric-data-table {
+     width: 100%;
+     margin-top: 10px;
+     background: rgba(255,255,255,0.09);
+     border-radius: 8px;
+     color: #f0f4f8;
+     font-size: 0.98rem;
+     overflow-x: auto;
+   }
+   .metric-data-table table {
+     width: 100%;
+     border-collapse: collapse;
+   }
+   .metric-data-table th, .metric-data-table td {
+     padding: 6px 10px;
+     text-align: left;
+     border-bottom: 1px solid rgba(255,255,255,0.16);
+   }
+   .metric-data-table th {
+     color: #e7f0ff;
+     background: rgba(0,0,0,0.08);
+     font-weight: 600;
+   }
+   .metric-data-table tr:last-child td {
+     border-bottom: none;
+   }
+   .btn {
+     background: var(--main-color);
+     color: white;
+     padding: 0.6rem 1.2rem;
+     border: none;
+     border-radius: 10px;
+     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+     font-size: 1rem;
+     cursor: pointer;
+     display: inline-block;
+     margin-bottom: 12px;
+   }
+   .btn:hover {
+     background: #0016b0;
+     transform: translateY(-2px);
+   }
+   .emergency-list {
+     margin-top: 7px;
+     margin-bottom: 0;
+     padding: 0 0 0 0;
+     font-size: 0.98rem;
+     background: rgba(255,255,255,0.05);
+     border-radius: 7px;
+     color: #fff;
+     max-height: 90px;
+     overflow-y: auto;
+   }
+   .emergency-list ul { margin: 0; padding: 0 0 0 20px; }
+   .emergency-list li { margin: 0 0 4px 0; }
+   .runtime-display {
+     text-align: center;
+     padding: 20px;
+     color: #fff;
+     font-size: 1.1rem;
+   }
+   .runtime-value {
+     font-size: 2.5rem;
+     font-weight: 700;
+     margin: 10px 0;
+     color: #fff;
+   }
+   @media (max-width: 1050px) {
+     .compare-cards-row { flex-direction: column; align-items: stretch; }
+     .metric-card { max-width: 100%; min-width: unset; }
+   }
+   @media (max-width: 600px) {
+     header h1 { font-size: 1.3rem; }
+     .dashboard { padding: 8px; }
+     .metric-card { padding: 10px 6px; }
+   }
+ </style>
+ <!-- Firebase SDK -->
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+ <header>
+   <h1>Securemove Admin Dashboard</h1>
+ </header>
+ <div class="dashboard">
+   <h2>📊 Performance Reports</h2>
+   <div style="display:flex; justify-content:center; margin-bottom:8px;">
+     <a href="admindashboard.html" class="btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+   </div>
+   <div class="category-controls">
+     <span class="category-label">Select Category:</span>
+     <select id="categorySelect" class="category-select">
+       <option value="deliveries">Number of Deliveries</option>
+       <option value="condition">Condition of Parcel Delivered</option>
+       <option value="runtime">Total RunTime of Vehicle</option>
+       <option value="emergencies">Emergencies Occurred</option>
+     </select>
+   </div>
+   <div class="compare-cards-row" id="compareCardsRow">
+     <!-- Injected by JS -->
+   </div>
+ </div>
+ <script>
+   firebase.initializeApp(firebaseConfig);
+   const db = firebase.database();
+
+   let chartCache = [null, null];
+   let selectedMonthIdx = 0;
+   let selectedVehicle = "";
+   let selectedRuntimeMonthIdx = 0; // New variable for runtime month selection
+   let monthsArr = [];
+   let statsByMonth = {};
+   let vehicleRuntimeData = {};
+   let availableVehicles = [];
+   let displayVehicles = []; // New array for cleaned vehicle names
+   let vehicleMapping = {}; // Mapping from display name to actual vehicle key
+   let selectedCategory = "deliveries";
+
+   function getMonthName(monthIdx) {
+     return [
+       "January", "February", "March", "April", "May", "June",
+       "July", "August", "September", "October", "November", "December"
+     ][monthIdx];
+   }
+
+   function getYearMonths() {
+     const now = new Date();
+     const months = [];
+     for(let m = 0; m <= now.getMonth(); m++) {
+       months.push(`${now.getFullYear()}-${String(m).padStart(2, '0')}`);
+     }
+     return months;
+   }
+
+   function parseDate(dateStr) {
+     if (!dateStr) return null;
+     
+     if (dateStr.includes('T')) {
+       return new Date(dateStr);
+     }
+     
+     if (dateStr.includes('-') && dateStr.split('-').length === 3) {
+       return new Date(dateStr);
+     }
+     
+     if (dateStr.includes('/')) {
+       const parts = dateStr.split('/');
+       if (parts.length === 3) {
+         return new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`);
+       }
+     }
+     
+     return null;
+   }
+
+   function getYearMonth(date) {
+     if (!date) return null;
+     const year = date.getFullYear();
+     const month = String(date.getMonth()).padStart(2, '0');
+     return `${year}-${month}`;
+   }
+
+   function getDayOfMonth(date) {
+     return date.getDate();
+   }
+
+   function parseTime(timeStr) {
+     if (!timeStr) return { hours: 0, minutes: 0 };
+     const parts = timeStr.split(':');
+     return {
+       hours: parseInt(parts[0]) || 0,
+       minutes: parseInt(parts[1]) || 0
+     };
+   }
+
+   function calculateRuntime(pickupDate, pickupTime, dropoffDate, dropoffTime) {
+     console.log('calculateRuntime called with:', {
+       pickupDate,
+       pickupTime,
+       dropoffDate,
+       dropoffTime
+     });
+
+     if (!pickupDate || !dropoffDate) {
+       console.log('calculateRuntime: Missing required dates');
+       return 0;
+     }
+
+     const pickup = parseDate(pickupDate);
+     const dropoff = parseDate(dropoffDate);
+     
+     if (!pickup || !dropoff) {
+       console.log('calculateRuntime: Could not parse dates');
+       return 0;
+     }
+
+     const pickupTimeObj = parseTime(pickupTime);
+     const dropoffTimeObj = parseTime(dropoffTime);
+
+     console.log('calculateRuntime: Parsed times:', { pickupTimeObj, dropoffTimeObj });
+
+     pickup.setHours(pickupTimeObj.hours, pickupTimeObj.minutes, 0, 0);
+     dropoff.setHours(dropoffTimeObj.hours, dropoffTimeObj.minutes, 0, 0);
+
+     console.log('calculateRuntime: Final dates:', { pickup, dropoff });
+
+     const diffMs = dropoff.getTime() - pickup.getTime();
+     const hours = Math.max(0, diffMs / (1000 * 60 * 60));
+     
+     console.log('calculateRuntime: Result:', hours, 'hours');
+     return hours;
+   }
+
+   function formatRuntime(hours) {
+     if (hours >= 24) {
+       const days = Math.floor(hours / 24);
+       const remainingHours = Math.floor(hours % 24);
+       const minutes = Math.floor((hours % 1) * 60);
+       
+       if (days === 1) {
+         return remainingHours > 0 ? `1 day, ${remainingHours}h ${minutes}m` : `1 day`;
+       } else {
+         return remainingHours > 0 ? `${days} days, ${remainingHours}h ${minutes}m` : `${days} days`;
+       }
+     } else {
+       const wholeHours = Math.floor(hours);
+       const minutes = Math.floor((hours % 1) * 60);
+       return `${wholeHours}h ${minutes}m`;
+     }
+   }
+
+   // New function to clean vehicle names for display
+   function cleanVehicleName(vehicleName) {
+     // Convert "standard_standard_truck_1754514" to "Standard Truck 1"
+     if (vehicleName.includes('standard_truck') || vehicleName.includes('standard_standard_truck')) {
+       // Extract the number at the end
+       const match = vehicleName.match(/(\d+)$/);
+       const number = match ? match[1] : '1';
+       // Take only the last digit for display
+       const displayNumber = number.slice(-1);
+       return `Standard Truck ${displayNumber}`;
+     }
+     
+     // For other truck types, try to format them nicely
+     return vehicleName.split('_').map(word => 
+       word.charAt(0).toUpperCase() + word.slice(1)
+     ).join(' ');
+   }
+
+   async function aggregateAllData() {
+     statsByMonth = {};
+     vehicleRuntimeData = {};
+     availableVehicles = [];
+     displayVehicles = [];
+     vehicleMapping = {};
+     monthsArr = getYearMonths();
+
+     try {
+       monthsArr.forEach(ym => {
+         statsByMonth[ym] = {
+           deliveries: 0,
+           ratingsGood: 0,
+           ratingsAcceptable: 0,
+           ratingsBad: 0,
+           usedVolume: 0,
+           emergencies: 0,
+           issueTypes: []
+         };
+       });
+
+       // 1. Orders: Number of Deliveries per month
+       const ordersSnap = await db.ref("Orders").once("value");
+       const ordersData = ordersSnap.val();
+       if (ordersData) {
+         Object.values(ordersData).forEach(order => {
+           if (!order) return;
+           
+           let deliveryDate = null;
+           if (order.dropoff_date) {
+             deliveryDate = parseDate(order.dropoff_date);
+           } else if (order.delivery_date) {
+             deliveryDate = parseDate(order.delivery_date);
+           } else if (order.completed_date) {
+             deliveryDate = parseDate(order.completed_date);
+           }
+           
+           if (!deliveryDate) return;
+           
+           const ym = getYearMonth(deliveryDate);
+           if (ym && statsByMonth[ym]) {
+             statsByMonth[ym].deliveries++;
+           }
+         });
+       }
+
+       // 2. Reviews: Condition of Parcel Delivered
+       const reviewsSnap = await db.ref("reviews").once("value");
+       const reviewsData = reviewsSnap.val();
+       if (reviewsData) {
+         Object.values(reviewsData).forEach(review => {
+           if (!review || typeof review.rating !== "number") return;
+           
+           let date;
+           if (review.timestamp) {
+             date = new Date(review.timestamp);
+           } else if (review.date) {
+             date = parseDate(review.date);
+           } else if (review.created_at) {
+             date = parseDate(review.created_at);
+           } else {
+             return;
+           }
+           
+           if (!date || isNaN(date.getTime())) return;
+           
+           const ym = getYearMonth(date);
+           if (ym && statsByMonth[ym]) {
+             if (review.rating >= 4) statsByMonth[ym].ratingsGood++;
+             else if (review.rating === 3) statsByMonth[ym].ratingsAcceptable++;
+             else statsByMonth[ym].ratingsBad++;
+           }
+         });
+       }
+
+       // 3. Vehicle Runtime Data from inRouteDeliveries
+       console.log('Fetching inRouteDeliveries data...');
+       const inRouteSnap = await db.ref("inRouteDeliveries").once("value");
+       const inRouteData = inRouteSnap.val();
+       console.log('Raw inRouteDeliveries data:', inRouteData);
+       
+       if (inRouteData) {
+         console.log('Processing inRouteDeliveries entries...');
+         Object.keys(inRouteData).forEach((deliveryKey, deliveryIndex) => {
+           const deliveryRecord = inRouteData[deliveryKey];
+           console.log(`Delivery ${deliveryIndex + 1} (${deliveryKey}):`, deliveryRecord);
+           
+           if (!deliveryRecord || !deliveryRecord.bookings) {
+             console.log(`Delivery ${deliveryIndex + 1}: No delivery record or bookings found`);
+             return;
+           }
+
+           console.log(`Delivery ${deliveryIndex + 1}: Found bookings:`, deliveryRecord.bookings);
+
+           // Process each booking within this delivery
+           Object.keys(deliveryRecord.bookings).forEach((bookingKey, bookingIndex) => {
+             const booking = deliveryRecord.bookings[bookingKey];
+             console.log(`  Booking ${bookingIndex + 1} (${bookingKey}):`, booking);
+
+             if (!booking) {
+               console.log(`  Booking ${bookingIndex + 1}: No booking data`);
+               return;
+             }
+
+             // Get truck name from the booking data
+             let truckName = booking.truckName || booking.truck_name || booking.vehicleName || booking.vehicle_name;
+             
+             // If no truckName in booking, use the delivery record ID as fallback
+             if (!truckName) {
+               truckName = deliveryKey;
+             }
+
+             console.log(`  Booking ${bookingIndex + 1}: Using truck name:`, truckName);
+
+             // Check if this booking has the required fields
+             console.log(`  Booking ${bookingIndex + 1}: All available fields:`, Object.keys(booking));
+
+             // Log specific date/time fields we're looking for
+             console.log(`  Booking ${bookingIndex + 1}: Date/time fields check:`, {
+               pickup_date: booking.pickup_date,
+               pickup_time: booking.pickup_time,
+               dropoff_date: booking.dropoff_date,
+               droptime: booking.droptime,
+               dropoff_time: booking.dropoff_time,
+               startedAt: booking.startedAt,
+               completedAt: booking.completedAt,
+               created_at: booking.created_at,
+               delivery_date: booking.delivery_date,
+               delivery_time: booking.delivery_time
+             });
+
+             // Try to calculate runtime with available fields
+             let runtime = 0;
+             
+             // Try different combinations of date/time fields
+             if (booking.pickup_date && booking.dropoff_date) {
+               runtime = calculateRuntime(
+                 booking.pickup_date,
+                 booking.pickup_time,
+                 booking.dropoff_date,
+                 booking.droptime || booking.dropoff_time
+               );
+             } else if (booking.startedAt && booking.completedAt) {
+               // If no separate date/time fields, try using startedAt/completedAt timestamps
+               const startTime = parseDate(booking.startedAt);
+               const endTime = parseDate(booking.completedAt);
+               if (startTime && endTime) {
+                 const diffMs = endTime.getTime() - startTime.getTime();
+                 runtime = Math.max(0, diffMs / (1000 * 60 * 60));
+               }
+             }
+             
+             console.log(`  Booking ${bookingIndex + 1}: Calculated runtime:`, runtime, 'hours');
+
+             if (runtime > 0 && truckName) {
+               if (!availableVehicles.includes(truckName)) {
+                 availableVehicles.push(truckName);
+                 const displayName = cleanVehicleName(truckName);
+                 if (!displayVehicles.includes(displayName)) {
+                   displayVehicles.push(displayName);
+                   vehicleMapping[displayName] = truckName;
+                 }
+                 console.log(`  Added vehicle: ${truckName} (display: ${displayName})`);
+               }
+
+               // Use pickup_date or startedAt for categorizing by month
+               let categoryDate = null;
+               if (booking.pickup_date) {
+                 categoryDate = parseDate(booking.pickup_date);
+               } else if (booking.startedAt) {
+                 categoryDate = parseDate(booking.startedAt);
+               } else if (booking.created_at) {
+                 categoryDate = parseDate(booking.created_at);
+               }
+
+               console.log(`  Booking ${bookingIndex + 1}: Using category date:`, categoryDate);
+               
+               if (categoryDate) {
+                 const ym = getYearMonth(categoryDate);
+                 const dayOfMonth = getDayOfMonth(categoryDate);
+                 console.log(`  Booking ${bookingIndex + 1}: Year-month: ${ym}, Day: ${dayOfMonth}`);
+
+                 if (!vehicleRuntimeData[truckName]) {
+                   vehicleRuntimeData[truckName] = {};
+                 }
+                 if (!vehicleRuntimeData[truckName][ym]) {
+                   vehicleRuntimeData[truckName][ym] = {
+                     totalHours: 0,
+                     dailyData: {}
+                   };
+                 }
+
+                 vehicleRuntimeData[truckName][ym].totalHours += runtime;
+                 
+                 if (!vehicleRuntimeData[truckName][ym].dailyData[dayOfMonth]) {
+                   vehicleRuntimeData[truckName][ym].dailyData[dayOfMonth] = 0;
+                 }
+                 vehicleRuntimeData[truckName][ym].dailyData[dayOfMonth] += runtime;
+                 
+                 console.log(`  Booking ${bookingIndex + 1}: Updated runtime data for ${truckName}`);
+                 console.log(`  Total hours for ${truckName} in ${ym}:`, vehicleRuntimeData[truckName][ym].totalHours);
+               } else {
+                 console.log(`  Booking ${bookingIndex + 1}: Could not determine category date`);
+               }
+             } else {
+               console.log(`  Booking ${bookingIndex + 1}: Skipped - Runtime: ${runtime}, TruckName: ${truckName}`);
+             }
+           });
+         });
+       } else {
+         console.log('No inRouteDeliveries data found in Firebase');
+       }
+
+       // 4. Issues: Emergencies
+       const issuesSnap = await db.ref("Issues").once("value");
+       const issuesData = issuesSnap.val();
+       if (issuesData) {
+         Object.values(issuesData).forEach(issue => {
+           if (!issue) return;
+           
+           let issueDate = null;
+           if (issue.submittedAt) {
+             issueDate = parseDate(issue.submittedAt);
+           } else if (issue.created_at) {
+             issueDate = parseDate(issue.created_at);
+           } else if (issue.date) {
+             issueDate = parseDate(issue.date);
+           }
+           
+           if (!issueDate || isNaN(issueDate.getTime())) return;
+           
+           const ym = getYearMonth(issueDate);
+           if (ym && statsByMonth[ym]) {
+             statsByMonth[ym].emergencies++;
+             if (issue.issueType) {
+               statsByMonth[ym].issueTypes.push(issue.issueType);
+             }
+           }
+         });
+       }
+
+       // Set default vehicle if not selected
+       if (displayVehicles.length > 0 && !selectedVehicle) {
+         selectedVehicle = displayVehicles[0];
+       }
+
+       console.log('Available vehicles:', availableVehicles);
+       console.log('Display vehicles:', displayVehicles);
+       console.log('Vehicle mapping:', vehicleMapping);
+       console.log('Vehicle runtime data:', vehicleRuntimeData);
+     } catch (error) {
+       console.error('Error aggregating data:', error);
+     }
+   }
+
+   function createChartData(highlightedMonthIdx) {
+     return monthsArr.map(ym2 => {
+       const stats = statsByMonth[ym2];
+       let value = 0;
+       if (selectedCategory === "deliveries") value = stats.deliveries;
+       if (selectedCategory === "condition") value = stats.ratingsGood + stats.ratingsAcceptable + stats.ratingsBad;
+       if (selectedCategory === "runtime") {
+         const actualVehicleName = vehicleMapping[selectedVehicle] || selectedVehicle;
+         if (actualVehicleName && vehicleRuntimeData[actualVehicleName] && vehicleRuntimeData[actualVehicleName][ym2]) {
+           value = vehicleRuntimeData[actualVehicleName][ym2].totalHours;
+         }
+       }
+       if (selectedCategory === "emergencies") value = stats.emergencies;
+       
+       if (selectedCategory === "condition") {
+         return value;
+       } else {
+         return (value === 0 || value < 0.001) ? null : value;
+       }
+     });
+   }
+
+   function renderCompareCards() {
+     chartCache.forEach(chart => chart && chart.destroy && chart.destroy());
+     chartCache = [null, null];
+
+     const compareDiv = document.getElementById("compareCardsRow");
+     compareDiv.innerHTML = "";
+
+     if (selectedCategory === "runtime") {
+       renderRuntimeCards();
+       return;
+     }
+
+     // Original category logic for non-runtime categories
+     const catConf = {
+       deliveries:    { label: "Number of Deliveries",      color: "#00bbff", format: v => v },
+       condition:     { label: "Condition of Parcel Delivered", color: "#ffb600" },
+       emergencies:   { label: "Emergencies Occurred",     color: "#e74c3c", format: v => v }
+     };
+     const cat = catConf[selectedCategory];
+
+     const monthIdxLeft = selectedMonthIdx;
+     const ymLeft = monthsArr[monthIdxLeft];
+     const statsLeft = statsByMonth[ymLeft];
+     
+     const monthIdxRight = monthsArr.length - 1;
+     const ymRight = monthsArr[monthIdxRight];
+     const statsRight = statsByMonth[ymRight];
+
+     // LEFT CARD
+     const leftCardDiv = document.createElement("div");
+     leftCardDiv.className = "metric-card";
+     
+     let valueCell = "";
+     let displayValue = "";
+     if (selectedCategory === "deliveries") {
+       valueCell = statsLeft.deliveries;
+       displayValue = statsLeft.deliveries.toString();
+     }
+     if (selectedCategory === "condition") {
+       valueCell = `
+         <span style="color:#2ecc40;">Good: ${statsLeft.ratingsGood}</span><br>
+         <span style="color:#f0ad4e;">Acceptable: ${statsLeft.ratingsAcceptable}</span><br>
+         <span style="color:#e74c3c;">Bad: ${statsLeft.ratingsBad}</span>
+       `;
+       displayValue = valueCell;
+     }
+     if (selectedCategory === "emergencies") {
+       valueCell = statsLeft.emergencies;
+       displayValue = statsLeft.emergencies.toString();
+     }
+
+     let extra = "";
+     if (selectedCategory === "condition") {
+       const total = statsLeft.ratingsGood + statsLeft.ratingsAcceptable + statsLeft.ratingsBad;
+       extra = `<div style="margin-top:7px;font-size:0.99rem;">Total: <b>${total}</b></div>`;
+     }
+     if (selectedCategory === "emergencies" && statsLeft.issueTypes.length > 0) {
+       const freq = {};
+       statsLeft.issueTypes.forEach(type => freq[type] = (freq[type]||0)+1);
+       extra = `<div class="emergency-list"><b>Issue Types:</b>
+         <ul>${Object.keys(freq).map(type => `<li>${type}: ${freq[type]}</li>`).join("")}</ul>
+       </div>`;
+     }
+
+     leftCardDiv.innerHTML = `
+       <div class="month-dropdown-wrap">
+         <select class="month-dropdown" id="monthDropdown">
+           ${monthsArr.map((ym, idx) => {
+             const [year, m] = ym.split("-");
+             return `<option value="${idx}" ${idx === selectedMonthIdx ? 'selected' : ''}>${getMonthName(Number(m))} ${year}</option>`;
+           }).join('')}
+         </select>
+       </div>
+       <h3>📅 Monthly Detail</h3>
+       <div class="month-title">${getMonthName(Number(ymLeft.split("-")[1]))} ${ymLeft.split("-")[0]}</div>
+       <div class="metric-graph-box">
+         <div style="text-align:center; padding:40px 20px; color:#fff;">
+           <div style="font-size:3rem; margin-bottom:10px;">${selectedCategory === "condition" ? "📊" : selectedCategory === "deliveries" ? "📦" : "🚨"}</div>
+           <div style="font-size:1.8rem; font-weight:700; margin-bottom:5px;">${displayValue}</div>
+           <div style="font-size:0.9rem; opacity:0.8;">${cat.label}</div>
+         </div>
+       </div>
+       <div class="metric-data-table">
+         <table>
+           <thead>
+             <tr><th>Selected Month Data</th></tr>
+           </thead>
+           <tbody>
+             <tr><td style="font-size:1.18rem;font-weight:700;">${valueCell}</td></tr>
+           </tbody>
+         </table>
+         ${extra}
+       </div>
+     `;
+     
+     compareDiv.appendChild(leftCardDiv);
+     
+     const dropdown = document.getElementById("monthDropdown");
+     if (dropdown) {
+       dropdown.onchange = function() {
+         selectedMonthIdx = parseInt(this.value);
+         renderCompareCards();
+       };
+     }
+
+     // RIGHT CARD
+     const rightCardDiv = document.createElement("div");
+     rightCardDiv.className = "metric-card";
+     
+     let currentValueCell = "";
+     if (selectedCategory === "deliveries") currentValueCell = statsRight.deliveries;
+     if (selectedCategory === "condition") currentValueCell = `
+       <span style="color:#2ecc40;">Good: ${statsRight.ratingsGood}</span><br>
+       <span style="color:#f0ad4e;">Acceptable: ${statsRight.ratingsAcceptable}</span><br>
+       <span style="color:#e74c3c;">Bad: ${statsRight.ratingsBad}</span>
+     `;
+     if (selectedCategory === "emergencies") currentValueCell = statsRight.emergencies;
+
+     rightCardDiv.innerHTML = `
+       <h3>📈 Year-to-Date Trend</h3>
+       <div class="month-title">${getMonthName(Number(ymRight.split("-")[1]))} ${ymRight.split("-")[0]} (Current)</div>
+       <div class="metric-graph-box"><canvas id="chartRight" height="120"></canvas></div>
+       <div class="metric-data-table">
+         <table>
+           <thead>
+             <tr><th>Current Month</th></tr>
+           </thead>
+           <tbody>
+             <tr><td style="font-size:1.18rem;font-weight:700;">${currentValueCell}</td></tr>
+           </tbody>
+         </table>
+       </div>
+     `;
+     compareDiv.appendChild(rightCardDiv);
+
+     const monthLabels = monthsArr.map(ym => {
+       const [year, m] = ym.split("-");
+       return `${getMonthName(Number(m))} ${year}`;
+     });
+
+     const trendData = createChartData();
+
+     const ctxRight = document.getElementById("chartRight").getContext("2d");
+     chartCache[1] = new Chart(ctxRight, {
+       type: selectedCategory === "condition" ? "bar" : "line",
+       data: {
+         labels: monthLabels,
+         datasets: [{
+           label: cat.label,
+           data: trendData,
+           borderColor: cat.color,
+           backgroundColor: selectedCategory === "condition" ? 
+             trendData.map((_,i)=>i===monthIdxRight?cat.color:'rgba(211, 224, 255, 0.3)') :
+             'rgba(211, 224, 255, 0.2)',
+           fill: selectedCategory !== "condition",
+           pointRadius: trendData.map((val, i) => {
+             if (val === null || val === 0) return 0;
+             if (i === monthIdxRight) return 6;
+             return 4;
+           }),
+           pointBackgroundColor: trendData.map((val, i) => {
+             if (val === null || val === 0) return "transparent";
+             if (i === monthIdxRight) return "#fff";
+             return cat.color;
+           }),
+           pointBorderWidth: trendData.map((val, i) => {
+             if (val === null || val === 0) return 0;
+             if (i === monthIdxRight) return 3;
+             return 2;
+           }),
+           pointBorderColor: trendData.map((val, i) => {
+             if (val === null || val === 0) return "transparent";
+             return cat.color;
+           }),
+           tension: 0,
+           spanGaps: false,
+           segment: {
+             borderColor: ctx => {
+               const prev = ctx.p0.parsed.y;
+               const curr = ctx.p1.parsed.y;
+               if (prev === null || curr === null) return 'transparent';
+               return cat.color;
+             }
+           }
+         }]
+       },
+       options: {
+         plugins: { legend: { display: false }},
+         scales: {
+           x: { grid: { display: false }, ticks: { color: "#fff", display: false }},
+           y: { beginAtZero: true, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.09)" } }
+         },
+         responsive: true,
+         maintainAspectRatio: false,
+         elements: {
+           point: {
+             hoverRadius: 8
+           }
+         }
+       }
+     });
+   }
+
+   function renderRuntimeCards() {
+     const compareDiv = document.getElementById("compareCardsRow");
+
+     if (displayVehicles.length === 0) {
+       compareDiv.innerHTML = `
+         <div style="color:#888;text-align:center;padding:30px 0;">
+           No vehicle runtime data available
+         </div>
+       `;
+       return;
+     }
+
+     // LEFT CARD: Selected Month Daily Runtime for Selected Vehicle
+     const leftCardDiv = document.createElement("div");
+     leftCardDiv.className = "metric-card";
+
+     const selectedMonthYm = monthsArr[selectedRuntimeMonthIdx];
+     const actualVehicleName = vehicleMapping[selectedVehicle] || selectedVehicle;
+     const selectedMonthData = actualVehicleName && vehicleRuntimeData[actualVehicleName] && vehicleRuntimeData[actualVehicleName][selectedMonthYm]
+       ? vehicleRuntimeData[actualVehicleName][selectedMonthYm] : null;
+
+     // Create daily chart data for selected month
+     const selectedDate = new Date(selectedMonthYm + '-01');
+     const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+     const dailyLabels = [];
+     const dailyData = [];
+     
+     for (let day = 1; day <= daysInMonth; day++) {
+       dailyLabels.push(day.toString());
+       const dayRuntime = selectedMonthData && selectedMonthData.dailyData[day] ? selectedMonthData.dailyData[day] : 0;
+       dailyData.push(dayRuntime > 0 ? dayRuntime : null);
+     }
+
+     const selectedMonthTotal = selectedMonthData ? selectedMonthData.totalHours : 0;
+
+     leftCardDiv.innerHTML = `
+       <div class="vehicle-dropdown-wrap">
+         <select class="vehicle-dropdown" id="vehicleDropdown">
+           ${displayVehicles.map(vehicle => 
+             `<option value="${vehicle}" ${vehicle === selectedVehicle ? 'selected' : ''}>${vehicle}</option>`
+           ).join('')}
+         </select>
+       </div>
+       <div class="month-dropdown-wrap">
+         <select class="month-dropdown" id="runtimeMonthDropdown">
+           ${monthsArr.map((ym, idx) => {
+             const [year, m] = ym.split("-");
+             return `<option value="${idx}" ${idx === selectedRuntimeMonthIdx ? 'selected' : ''}>${getMonthName(Number(m))} ${year}</option>`;
+           }).join('')}
+         </select>
+       </div>
+       <h3>🚛 Monthly Runtime Detail</h3>
+       <div class="month-title">${getMonthName(Number(selectedMonthYm.split("-")[1]))} ${selectedMonthYm.split("-")[0]}</div>
+       <div class="metric-graph-box">
+         <canvas id="chartLeft" height="120"></canvas>
+       </div>
+       <div class="runtime-display">
+         <div style="font-size:1rem; opacity:0.8; margin-bottom:5px;">Total Runtime This Month</div>
+         <div class="runtime-value">${formatRuntime(selectedMonthTotal)}</div>
+         <div style="font-size:0.9rem; opacity:0.7;">${selectedVehicle}</div>
+       </div>
+     `;
+
+     compareDiv.appendChild(leftCardDiv);
+
+     // Add vehicle dropdown event listener
+     const vehicleDropdown = document.getElementById("vehicleDropdown");
+     if (vehicleDropdown) {
+       vehicleDropdown.onchange = function() {
+         selectedVehicle = this.value;
+         renderCompareCards();
+       };
+     }
+
+     // Add runtime month dropdown event listener
+     const runtimeMonthDropdown = document.getElementById("runtimeMonthDropdown");
+     if (runtimeMonthDropdown) {
+       runtimeMonthDropdown.onchange = function() {
+         selectedRuntimeMonthIdx = parseInt(this.value);
+         renderCompareCards();
+       };
+     }
+
+     // RIGHT CARD: Year-to-Date Runtime Trend for Selected Vehicle
+     const rightCardDiv = document.createElement("div");
+     rightCardDiv.className = "metric-card";
+
+     // Create monthly trend data for selected vehicle
+     const monthlyLabels = monthsArr.map(ym => {
+       const [year, m] = ym.split("-");
+       return `${getMonthName(Number(m))}`;
+     });
+
+     const monthlyData = monthsArr.map(ym => {
+       if (actualVehicleName && vehicleRuntimeData[actualVehicleName] && vehicleRuntimeData[actualVehicleName][ym]) {
+         return vehicleRuntimeData[actualVehicleName][ym].totalHours;
+       }
+       return null;
+     });
+
+     // Calculate year-to-date total
+     const ytdTotal = monthlyData.reduce((sum, val) => sum + (val || 0), 0);
+
+     rightCardDiv.innerHTML = `
+       <h3>📈 Year-to-Date Trend</h3>
+       <div class="month-title">January - ${getMonthName(new Date().getMonth())} ${new Date().getFullYear()}</div>
+       <div class="metric-graph-box">
+         <canvas id="chartRight" height="120"></canvas>
+       </div>
+       <div class="runtime-display">
+         <div style="font-size:1rem; opacity:0.8; margin-bottom:5px;">Total YTD Runtime</div>
+         <div class="runtime-value">${formatRuntime(ytdTotal)}</div>
+         <div style="font-size:0.9rem; opacity:0.7;">${selectedVehicle}</div>
+       </div>
+     `;
+
+     compareDiv.appendChild(rightCardDiv);
+
+     // Create left chart (daily runtime for selected month)
+     const ctxLeft = document.getElementById("chartLeft").getContext("2d");
+     chartCache[0] = new Chart(ctxLeft, {
+       type: "line",
+       data: {
+         labels: dailyLabels,
+         datasets: [{
+           label: "Daily Runtime (Hours)",
+           data: dailyData,
+           borderColor: "#00bbff",
+           backgroundColor: "rgba(0, 187, 255, 0.2)",
+           fill: true,
+           pointRadius: dailyData.map(val => val === null ? 0 : 4),
+           pointBackgroundColor: dailyData.map(val => val === null ? "transparent" : "#00bbff"),
+           pointBorderWidth: 2,
+           pointBorderColor: "#00bbff",
+           tension: 0.1,
+           spanGaps: false
+         }]
+       },
+       options: {
+         plugins: { legend: { display: false }},
+         scales: {
+           x: { 
+             grid: { display: false }, 
+             ticks: { 
+               color: "#fff",
+               maxTicksLimit: 10,
+               callback: function(value, index) {
+                 return index % Math.ceil(dailyLabels.length / 8) === 0 ? dailyLabels[index] : '';
+               }
+             }
+           },
+           y: { 
+             beginAtZero: true, 
+             ticks: { 
+               color: "#fff",
+               callback: function(value) {
+                 return value.toFixed(1) + 'h';
+               }
+             }, 
+             grid: { color: "rgba(255,255,255,0.09)" } 
+           }
+         },
+         responsive: true,
+         maintainAspectRatio: false,
+         elements: {
+           point: {
+             hoverRadius: 6
+           }
+         },
+         tooltips: {
+           callbacks: {
+             label: function(context) {
+               return `Runtime: ${formatRuntime(context.parsed.y)}`;
+             }
+           }
+         }
+       }
+     });
+
+     // Create right chart (monthly runtime trend)
+     const ctxRight = document.getElementById("chartRight").getContext("2d");
+     chartCache[1] = new Chart(ctxRight, {
+       type: "line",
+       data: {
+         labels: monthlyLabels,
+         datasets: [{
+           label: "Monthly Runtime (Hours)",
+           data: monthlyData,
+           borderColor: "#002fff",
+           backgroundColor: "rgba(0, 47, 255, 0.2)",
+           fill: true,
+           pointRadius: monthlyData.map((val, i) => {
+             if (val === null) return 0;
+             if (i === monthlyData.length - 1) return 6; // Current month
+             return 4;
+           }),
+           pointBackgroundColor: monthlyData.map((val, i) => {
+             if (val === null) return "transparent";
+             if (i === monthlyData.length - 1) return "#fff"; // Current month
+             return "#002fff";
+           }),
+           pointBorderWidth: monthlyData.map((val, i) => {
+             if (val === null) return 0;
+             if (i === monthlyData.length - 1) return 3;
+             return 2;
+           }),
+           pointBorderColor: monthlyData.map(val => val === null ? "transparent" : "#002fff"),
+           tension: 0.1,
+           spanGaps: false
+         }]
+       },
+       options: {
+         plugins: { legend: { display: false }},
+         scales: {
+           x: { 
+             grid: { display: false }, 
+             ticks: { color: "#fff" }
+           },
+           y: { 
+             beginAtZero: true, 
+             ticks: { 
+               color: "#fff",
+               callback: function(value) {
+                 return value.toFixed(0) + 'h';
+               }
+             }, 
+             grid: { color: "rgba(255,255,255,0.09)" } 
+           }
+         },
+         responsive: true,
+         maintainAspectRatio: false,
+         elements: {
+           point: {
+             hoverRadius: 8
+           }
+         },
+         tooltips: {
+           callbacks: {
+             label: function(context) {
+               return `Runtime: ${formatRuntime(context.parsed.y)}`;
+             }
+           }
+         }
+       }
+     });
+   }
+
+   async function fetchAndRender(catVal) {
+     selectedCategory = catVal;
+     selectedMonthIdx = 0;
+     selectedRuntimeMonthIdx = monthsArr.length - 1; // Default to current month for runtime
+     document.getElementById("compareCardsRow").innerHTML = `<div style="color:#888;text-align:center;padding:30px 0;">Loading...</div>`;
+     await aggregateAllData();
+     if (selectedMonthIdx > monthsArr.length-2) selectedMonthIdx = Math.max(0, monthsArr.length-2);
+     renderCompareCards();
+   }
+
+   document.getElementById("categorySelect").onchange = function() {
+     fetchAndRender(this.value);
+   };
+
+   document.addEventListener("DOMContentLoaded", () => {
+     fetchAndRender(document.getElementById("categorySelect").value);
+   });
+ </script>
+</body>
+</html>

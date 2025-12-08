@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securemove Logistics - Warehouse Storage Booking</title>
+
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Box Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" class="logo"><img src="img/logo.jpg" alt=""></a>
+        <ul class="navbar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#services">Services</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="index.html#reviews">Reviews</a></li>
+        </ul>
+        <!-- <div class="header-btn">
+            <a href="signuplogin.html" class="sign-up">Sign Up</a>
+            <a href="signuplogin.html" class="login">Login</a>
+        </div> -->
+    </header>
+
+    <!-- Warehouse Storage Booking Section -->
+    <section class="storage-booking" id="storage-booking">
+        <div class="heading">
+            <span>Book Your Warehouse Storage</span>
+            <h1>Store Your Goods Safely with Securemove</h1>
+        </div>
+
+        <div class="booking-container">
+            <form id="storage-booking-form">
+                <!-- Customer Details -->
+                <div class="customer-details" id="userInfo">
+                    <h2>Customer Details</h2>
+                    <label for="full-name" >Full Name:</label>
+                    <input type="text" readonly id="full-name" name="full-name" required placeholder="Enter your full name">
+
+                    <label for="email">Email Address:</label>
+                    <input type="email" readonly id="email" name="email" required placeholder="Enter your email address">
+
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number">
+                </div>
+
+                <!-- Type of Goods -->
+                <div class="goods-type">
+                    <h2>Type of Goods</h2>
+                    <label for="goods-type">Select Type of Goods:</label>
+                    <select id="goods-type" name="goods-type" required>
+                        <option value="furniture">Furniture</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="documents">Documents</option>
+                        <option value="vehicles">Vehicles</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Storage Duration -->
+                <div class="storage-duration">
+                    <h2>Select Storage Duration</h2>
+                    <label for="storage-duration">Enter Duration (in months):</label>
+                    <input type="number" id="storage-duration" name="storage-duration" min="1" required placeholder="Enter number of months">
+                </div>
+
+                <div class="price-calculation">
+                    <h2>Total Price</h2>
+                    <p id="total-price">Price: R0</p>
+                </div>
+
+                <div class="messages">
+                    <h2>*Payment must be done upon storing your goods to our cashiers on site per month*</h2>
+                </div>
+
+                <script>
+                    const pricePerMonth = 500; // Set price per month
+                    const storageDurationInput = document.getElementById("storage-duration");
+                    const totalPriceElement = document.getElementById("total-price");
+
+                    storageDurationInput.addEventListener("input", () => {
+                        const months = parseInt(storageDurationInput.value) || 0;
+                        const totalPrice = months * pricePerMonth;
+                        totalPriceElement.textContent = `Price: R${totalPrice}`;
+                    });
+                </script>
+
+                <!-- Submit Button -->
+                <div class="submit-button">
+                    <button type="submit" class="btn">Book Storage</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="copyright">
+            <p> &#169; Securemove Logistics All Rights Reserved</p>
+            <div class="social">
+                <a href="https://www.instagram.com/securemove_logistics/" class="social-icon"><i class="bx bxl-instagram"></i></a>
+                <a href="https://wa.me/27793868100" target="_blank" i class="bx bxl-whatsapp"></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK and JS for form submission -->
+    <script type="module">
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Form submission event
+        document.getElementById("storage-booking-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Get form values
+            const fullName = document.getElementById("full-name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const goodsType = document.getElementById("goods-type").value;
+            const storageDuration = document.getElementById("storage-duration").value;
+            const totalPrice = document.getElementById("total-price").textContent;
+            const priceValue = totalPrice.split("R")[1].trim(); // Extract the price value
+            const price = parseInt(priceValue) || 0;
+            const bookingDate = new Date().toLocaleDateString(); // Get current date
+            const bookingTime = new Date().toLocaleTimeString(); // Get current time
+
+            // Create a reference in the database
+            const usersRef = ref(database, "StorageBookings");
+            const newStorageRef = push(usersRef); // Create a new unique ID
+
+            // Store data in Firebase Realtime Database
+            set(newStorageRef, {
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                goodsType: goodsType,
+                storageDuration: storageDuration,
+                totalPrice: price,
+                bookingDate: bookingDate,
+                bookingTime: bookingTime
+            })
+            .then(() => {
+                alert("Storage booked successfully!");
+                document.getElementById("storage-booking-form").reset();
+
+                setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2000);
+            })
+            .catch((error) => {
+                alert("Error: " + error.message);
+            });
+        });
+
+        // Example in storage.html (on submit or selection)
+localStorage.setItem('customerName', fullName.value);
+
+    </script>
+    <script type="module" src="./index.js"></script>
+</body>
+
+</html>
+

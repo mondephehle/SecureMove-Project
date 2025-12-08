@@ -1,0 +1,339 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securemove Logistics</title>
+
+    <!--Link to CSS-->
+    <link rel="stylesheet" href="style.css">
+    <!--Box Icons-->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+</head>
+
+<body>
+  
+    <script src="https://cdn.botpress.cloud/webchat/v2.3/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2025/04/09/16/20250409160147-1YPJ71O4.js"></script>
+  
+<style>
+    /* Fancy Navbar Link */
+    .dashboardbtn {
+        display: inline-block;
+        padding: 12px 25px;
+        background: linear-gradient(45deg, #6a11cb, #2575fc); /* Gradient background */
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 30px;
+        transition: all 0.4s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        z-index: 1; /* Higher z-index to ensure text stays visible */
+    }
+    .dashboardbtn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300%;
+        height: 300%;
+        background-color: black;
+        transition: all 0.4s ease;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        z-index: -1; /* Lower z-index to prevent covering text */
+    }
+    
+
+    .dashboardbtn:hover::before {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .dashboardbtn:hover {
+        background: linear-gradient(45deg, #2575fc, #6a11cb); /* Reverse gradient on hover */
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        transform: translateY(-4px); /* Lift effect */
+        color: white;
+    }
+
+    .dashboardbtn:active {
+        transform: translateY(2px); /* Pressed effect */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        color: white !important; 
+    }
+
+</style>
+
+
+
+    <!--Header-->
+    <header>
+        <a href="#" class="logo"><img src="img/logo.jpg" alt=""></a>
+        <a href="dashboard.html" class="dashboardbtn">Dashboard</a>
+
+        <ul class="navbar">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#reviews">Reviews</a></li>
+        </ul>
+
+        <div class="header-btn">
+            <!-- <a href="signuplogin.html" class="sign-up">Sign Up</a> -->
+            <a href="signuplogin.html" class="login">Login</a>
+        </div>
+    </header>
+
+    <!--Home-->
+    <section class="home" id="home">
+        <div class="text">
+            <h1><span>Looking</span> to <br>securely move your items</h1>
+            <p>Choose Securemove</p>
+        </div>
+    </section>
+
+    <!--Ride-->
+    <div class="section" id="ride">
+        <div class="heading">
+             <span>How It Works</span>
+             <h1>3 Easy Steps</h1>
+        </div>
+        <div class="ride-container">
+            <div class="box">
+                <i class="bx bxs-map "> </i>
+                <h2>Choose Pick-Up Location</h2>
+                <p>Choose a convenient pickup location with ease! Select from saved addresses or search manually. We ensure a seamless pickup experience, whether it's your home, office, or a nearby branch. Get started now! 🚛📍</p>
+            </div>
+
+            <div class="box">
+                <i class="bx bxs-calendar-check"></i>
+                <h2>Choose Pick-Up Date</h2>
+                <p>Select your preferred pickup date with ease! Schedule a time that works best for you, and our team will handle the rest. Whether it's an urgent pickup or a planned delivery, we ensure timely service to meet your needs. 📅🚛</p>
+            </div>
+
+            <div class="box">
+                <i class="bx bxs-map"></i>
+                <h2>Choose Drop-Off Locaton</h2>
+                <p>Easily set your drop-off location! Choose from saved addresses, enter it manually. Whether it's a home, office, or business, we ensure a smooth and reliable delivery. Let's get it there! 🚚📍</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!--Services-->
+    <section class="services" id="services">
+        <div class="heading">
+            <span>Best Services</span>
+            <h1>Explore Our Top Services <br>From Standard Deliveries to Storage Facilities to Specialized Deliveries</h1>
+        </div>
+        <div class="services-container">
+            
+
+            <div class="box">
+                <div class="box-img">
+                    <img src="img/c99ba116ee1b3e5a43df6beca306ef57.jpg" alt="">
+                </div>
+                <br>
+                <h3>Door-to-Door Delivery</h3>
+                <h3>Any Location Throughout South Africa</h3>
+                <h2>Price<span> Varies</span></h2>
+                <a href="booking.html" class="btn">Learn More</a>
+            </div>
+
+            <div class="box">
+                <div class="box-img">
+                    <img src="img/c99ba116ee1b3e5a43df6beca306ef57.jpg" alt="">
+                </div>
+                <br>
+                <h3>Storage Solutions</h3>
+                <h3>Any Location Throughout South Africa</h3>
+                <h2>Price<span> Varies</span></h2>
+                <a href="storage.html" class="btn">Learn More</a>
+            </div>
+
+            <div class="box">
+                <div class="box-img">
+                    <img src="img/c99ba116ee1b3e5a43df6beca306ef57.jpg" alt="">
+                </div>
+                <br>
+                <h3>Specialized Service</h3>
+                <h3>Any Location Throughout South Africa</h3>
+                <h2>Price<span> Varies</span></h2>
+                <a href="specializedform.html" class="btn">Learn More</a>
+            </div>
+
+              <div class="box">
+                <div class="box-img">
+                    <img src="img/c99ba116ee1b3e5a43df6beca306ef57.jpg" alt="">
+                </div>
+                <br>
+                <h3>Agricultural Transport</h3>
+                <h3>Any Location Throughout South Africa</h3>
+                <h2>Price<span> Varies</span></h2>
+                <a href="agriculturetransport.html" class="btn">Learn More</a>
+            </div>
+
+            <div class="box">
+                <div class="box-img">
+                    <img src="img/c99ba116ee1b3e5a43df6beca306ef57.jpg" alt="">
+                </div>
+                <br>
+                <h3>Export Services</h3>
+                <h3>Any Location Throughout South Africa</h3>
+                <h2>Price<span> Varies</span></h2>
+                <a href="exportbooking.html" class="btn">Learn More</a>
+            </div>
+
+
+        </div>
+    </section>
+
+    <!--About-->
+    <section class="about" id="about">
+        <div class="heading">
+            <span>About Us</span>
+            <h1>What We Do</h1>
+        </div>
+        <div class="about-container">
+            <div class="about-img">
+                <img src="img/logo.jpg" alt="">
+            </div>
+            <div class="about-text">
+                <span>About Us</span>
+                <p>At SecureMove Logistics we Specialize in Providing
+                    Seamless Logistics and storage solutions tailored to your unique needs. With years of Experience in the industry, our team of experts ensures efficient, secure and reliable services</p>
+                <a href="#" class="btn">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+   <!--Reviews-->
+<section class="reviews" id="reviews">
+    <div class="heading">
+        <span>Reviews</span>
+        <h1>What Our Customers Say</h1>
+         <button onclick="window.location.href='reviews.html'" style="
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #6366f1, #818cf8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        ">Add Your Review</button>
+    </div>
+    <div class="reviews-container">
+        <div class="box">
+            <div class="rev-img">
+                <img src="img/rev1.jpeg" alt="">
+            </div>
+            <h2>Jane Doe</h2>
+            <div class="stars">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star-half"></i>
+            </div>
+            <p>Exceptional service! The team went above and beyond to make sure everything was perfect. I highly recommend them!</p>
+        </div>
+
+        <div class="box">
+            <div class="rev-img">
+                <img src="img/rev2.avif" alt="">
+            </div>
+            <h2>John Smith</h2>
+            <div class="stars">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+            </div>
+            <p>Great experience overall. The quality of the products is outstanding, and the customer support was very helpful!</p>
+        </div>
+
+        <div class="box">
+            <div class="rev-img">
+                <img src="img/rev3.jpeg" alt="">
+            </div>
+            <h2>Johan van der Merwe</h2>
+            <div class="stars">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+            </div>
+            <p>Absolutely fantastic! The craftsmanship and attention to detail exceeded my expectations. Will definitely return for future purchases.</p>
+        </div>
+    </div>
+</section>
+
+   <!--NewsLetter-->
+   <section class="newsletter">
+    <h2>Subscribe To Newsletter</h2>
+    <div class="box">
+        <input type="text" placeholder="Enter Your Email...">
+        <a href="#" class="subscribeBtn" id="subscribeBtn">Subscribe</a>
+    </div>  
+    
+    <!-- Response message -->
+    <p id="responseMessage" style="color: white;"></p> 
+    <div class="end-content-box">
+        <h2>Book Your Next Delivery Today</h2>
+        <a href="booking.html" class="btn">Book Now</a>
+        <a href="pickupdropoff.html" class="btn">Pickup/Dropoff</a>
+        <a href="status.html" class="btn">Order Tracking</a>
+        <a href="payment.html" class="btn">Payment</a>
+        <a href="issuesanderrors.html" class="btn">Customer Service</a>
+        <a href="warehousekeys.html" class="btn">Storage Keys</a>
+        <a href="specializedform.html" class="btn">Specialized Deliveries</a>
+        <a href="agriculturetransport.html" class="btn">Agricultural Transport</a>
+        <a href="damagedgoods.html" class="btn">Damaged Goods</a>
+    </div>
+</section>
+
+<div class="copyright">
+    <p> &#169; Securemove Logistics All Right Reserved</p>
+    <a href="adminlogin.html" id="adminlog" style="color: black; margin-left: 20px;">
+        <i class="bx bx-lock"></i> Admin Login
+    </a>    
+    <a href="driverloginsignup.html" id="adminlog" style="color: black; margin-left: 20px;">
+        <i class="bx bx-lock"></i> Driver Login
+    </a>    
+    <div class="social">
+        <a href="https://www.instagram.com/securemove_logistics/" target="_blank">
+            <i class="bx bxl-instagram"></i>
+        </a>
+        <a href="https://wa.me/27793868100" target="_blank">
+            <i class="bx bxl-whatsapp"></i>
+        </a>
+    </div>
+</div>
+
+
+<!-- JavaScript -->
+<script>
+    document.getElementById("subscribeBtn").addEventListener("click", function(event) {
+        event.preventDefault();  // Prevent default link behavior
+
+        let messageElement = document.getElementById("responseMessage");
+        messageElement.textContent = "Thank you for subscribing! You are now subscribed and will receive emails on business offers, services, and much more...";
+
+        // Clear the message after 3 seconds (3000ms)
+        setTimeout(() => {
+            messageElement.textContent = "";
+        }, 3000);
+    });
+</script>
+
+</body>
+</html>
+
+

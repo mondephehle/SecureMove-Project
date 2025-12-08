@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Intelligence Dashboard</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db; --secondary-color: #2c3e50; --success-color: #2ecc71;
+            --danger-color: #e74c3c; --warning-color: #f39c12; --bg-light: #f8f9fa;
+            --border-color: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1600px; margin: auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 300; }
+        .controls { padding: 20px; background: var(--bg-light); border-bottom: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--secondary-color); }
+        input, select { padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; transition: all .3s ease; }
+        .btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all .3s ease; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn.export-pdf { background: var(--danger-color); } .btn.export-csv { background: var(--success-color); }
+        .tabs { display: flex; background-color: var(--bg-light); padding: 0 30px; border-bottom: 1px solid var(--border-color); }
+        .tab-link { padding: 15px 25px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #7f8c8d; transition: all .3s ease; }
+        .tab-link.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; padding: 30px; animation: fadeIn .5s; }
+        .tab-content.active { display: block; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.08); border-left: 5px solid var(--primary-color); position: relative; }
+        .kpi-card h3 { font-size: 0.8rem; margin-bottom: 8px; color: #7f8c8d; text-transform: uppercase; }
+        .kpi-value { font-size: 1.8rem; font-weight: bold; color: var(--secondary-color); }
+        .kpi-comparison { font-size: 0.9rem; font-weight: bold; }
+        .kpi-comparison.positive { color: var(--success-color); } .kpi-comparison.negative { color: var(--danger-color); }
+        .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px; }
+        @media (max-width: 992px) { .chart-grid { grid-template-columns: 1fr; } }
+        .chart-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.08); height: 400px; }
+        .chart-title { font-size: 1.3rem; margin-bottom: 15px; text-align: center; color: var(--secondary-color); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--bg-light); font-weight: 600; cursor: pointer; user-select: none; position: relative; }
+        th.sort-asc::after { content: ' ▲'; }
+        th.sort-desc::after { content: ' ▼'; }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 15px; text-align: left; font-size: 0.9rem; }
+        .data-explorer-filters { padding: 0 0 20px 0; display: flex; gap: 20px; }
+        .loading { display: none; text-align:center; padding:50px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; } @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+        .toggle-switch { display: flex; align-items: center; font-size: 0.9rem; }
+        .toggle-switch input { height: 0; width: 0; visibility: hidden; }
+        .toggle-switch label { cursor: pointer; text-indent: -9999px; width: 40px; height: 20px; background: grey; display: block; border-radius: 100px; position: relative; }
+        .toggle-switch label:after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 90px; transition: 0.3s; }
+        .toggle-switch input:checked + label { background: var(--primary-color); }
+        .toggle-switch input:checked + label:after { left: calc(100% - 2px); transform: translateX(-100%); }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header"><h1>Business Intelligence Dashboard</h1></header>
+        <a href="admindashboard.html" class="btn" style="margin-right:15px; display:inline-block;">Back to Dashboard </a>
+        <div class="controls">
+            <div class="form-group"><label for="startDate">Start Date</label><input type="date" id="startDate"></div>
+            <div class="form-group"><label for="endDate">End Date</label><input type="date" id="endDate"></div>
+            <button class="btn" onclick="generateDashboard()">Generate Dashboard</button>
+            <button class="btn" id="resetViewBtn" style="display:none;" onclick="resetDashboardView()">Reset View</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-link active" onclick="openTab(event, 'overview')">Overview</div>
+            <div class="tab-link" onclick="openTab(event, 'dataExplorer')">Data Explorer</div>
+        </div>
+
+        <div id="overview" class="tab-content active">
+            <div class="controls" style="justify-content:space-between;">
+                <div class="form-group">
+                    <label for="profitGoal">Monthly Profit Goal (R)</label>
+                    <input type="number" id="profitGoal" value="20000" onchange="generateDashboard()" style="width: 200px;">
+                </div>
+                <button class="btn export-pdf" onclick="exportToPDF()">Export to PDF</button>
+            </div>
+            <div id="kpiContainer" class="kpi-grid"></div>
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <h3>Monthly Performance Trends</h3>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="forecastToggle" onchange="generateDashboard()">
+                            <label for="forecastToggle">Toggle</label>
+                            <span>&nbsp;Show Forecast</span>
+                        </div>
+                    </div>
+                    <canvas id="trendsChart"></canvas>
+                </div>
+                <div style="display:flex; flex-direction: column; gap: 30px;">
+                    <div class="chart-container" style="height: 50%;"><h3 class="chart-title">Income Composition</h3><canvas id="compositionChart"></canvas></div>
+                    <div class="chart-container" style="height: 50%;"><h3 class="chart-title">Profit Goal</h3><canvas id="goalGaugeChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dataExplorer" class="tab-content">
+            <div class="data-explorer-filters">
+                <input type="text" id="tableSearch" onkeyup="renderDataTable()" placeholder="Search transactions..." style="flex-grow: 1;">
+                <select id="tableTypeFilter" onchange="renderDataTable()">
+                    <option value="">All Types</option>
+                    <option value="Order">Order</option>
+                    <option value="Storage">Storage</option>
+                    <option value="Expense">Expense</option>
+                </select>
+                <button class="btn export-csv" onclick="exportToCSV()">Export to CSV</button>
+            </div>
+            <table id="dataTable"></table>
+        </div>
+        
+        <div id="loading" class="loading"><div class="spinner"></div><p>Processing Data...</p></div>
+    </div>
+
+<script>
+
+    const expenseFieldAliases = { 'fuel_cost': 'Fuel Cost', 'workers_wages':'Worker Wages', 'insurance_payment': 'Insurance', 'security_price': 'Security', 'tracking_payment': 'Vehicle Tracking Services', 'utilities_bill': 'Utilities' };
+    let db;
+    let charts = {};
+    let fullDataset = { orders: {}, storage: {}, expenses: {} };
+    let currentTransactions = [];
+    let dashboardState = { drillDownMonth: null, sortColumn: 'date', sortDirection: 'desc' };
+
+    // --- Firebase Initialization ---
+    try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch (e) { console.error("Firebase init failed:", e); }
+
+    // --- Core Data Logic ---
+    async function loadData() {
+        if (Object.keys(fullDataset.orders).length > 0) return fullDataset;
+        const paths = ["Orders", "StorageBookings", "financial_info"];
+        const promises = paths.map(path => db.ref(path).once("value").catch(() => ({ val: () => null })));
+        const [ordersSnap, storageSnap, expensesSnap] = await Promise.all(promises);
+        fullDataset = { orders: ordersSnap.val() || {}, storage: storageSnap.val() || {}, expenses: expensesSnap.val() || {} };
+        return fullDataset;
+    }
+
+    function processData(data, startDate, endDate) {
+        const transactions = [];
+        const monthlyData = {};
+        let totals = { income: 0, expense: 0, orderCount: 0, storageCount: 0, ordersRev: 0, storageRev: 0 };
+
+        const inRange = (dStr) => {
+            if (!dStr) return false;
+            const t = new Date(dStr).getTime();
+            return !isNaN(t) && t >= new Date(startDate).getTime() && t <= new Date(endDate + "T23:59:59").getTime();
+        };
+        const addToMonthly = (dStr, inc = 0, exp = 0) => {
+            const m = new Date(dStr).toISOString().slice(0, 7);
+            if (!monthlyData[m]) monthlyData[m] = { income: 0, expense: 0 };
+            monthlyData[m].income += inc; monthlyData[m].expense += exp;
+        };
+
+        Object.values(data.orders || {}).forEach(o => { if (o && inRange(o.pickup_date)) {
+            const amt = Number(o.total_price || 0);
+            totals.income += amt; totals.orderCount++; totals.ordersRev += amt; addToMonthly(o.pickup_date, amt);
+            transactions.push({ date: o.pickup_date, type: 'Order', description: `Order #${o.orderid}`, amount: amt, category: 'Income' });
+        }});
+        Object.values(data.storage || {}).forEach(s => { if (s && inRange(s.bookingDate)) {
+            const amt = Number(s.totalPrice || 0);
+            totals.income += amt; totals.storageCount++; totals.storageRev += amt; addToMonthly(s.bookingDate, amt);
+            transactions.push({ date: s.bookingDate, type: 'Storage', description: `${s.storageDuration} months`, amount: amt, category: 'Income' });
+        }});
+        Object.values(data.expenses || {}).forEach(e => { 
+            const date = e.timestamp || e.date; // FIX: Handle missing timestamp
+            if (e && inRange(date)) {
+                Object.entries(e).forEach(([key, value]) => {
+                    const cat = expenseFieldAliases[key]; if (cat) {
+                        const amt = Number(value || 0); totals.expense += amt; addToMonthly(date, 0, amt);
+                        transactions.push({ date: date, type: 'Expense', description: cat, amount: -amt, category: cat });
+                    }
+                });
+        }});
+        
+        totals.profit = totals.income - totals.expense;
+        return { totals, monthlyData, transactions };
+    }
+
+    // --- Rendering Functions ---
+    function renderKPIs(current, previous) {
+        const createComparisonHTML = (currentVal, prevVal) => {
+            if (prevVal === 0 && currentVal > 0) return `<span class="kpi-comparison positive">▲ New</span>`;
+            if (prevVal === 0) return `<span class="kpi-comparison">---</span>`;
+            const percentChange = ((currentVal - prevVal) / Math.abs(prevVal)) * 100;
+            if (isNaN(percentChange)) return `<span class="kpi-comparison">---</span>`;
+            const trendClass = percentChange >= 0 ? 'positive' : 'negative';
+            const icon = trendClass === 'positive' ? '▲' : '▼';
+            return `<span class="kpi-comparison ${trendClass}">${icon} ${percentChange.toFixed(1)}% vs. last period</span>`;
+        };
+        document.getElementById('kpiContainer').innerHTML = `
+            <div class="kpi-card"><h3 class="kpi-title">Total Income</h3><p class="kpi-value">R ${current.income.toLocaleString()}</p>${createComparisonHTML(current.income, previous.income)}</div>
+            <div class="kpi-card"><h3 class="kpi-title">Total Expense</h3><p class="kpi-value">R ${current.expense.toLocaleString()}</p>${createComparisonHTML(current.expense, previous.expense)}</div>
+            <div class="kpi-card"><h3 class="kpi-title">Net Profit</h3><p class="kpi-value">R ${current.profit.toLocaleString()}</p>${createComparisonHTML(current.profit, previous.profit)}</div>`;
+    }
+
+    function renderCharts(totals, monthlyData) {
+        // ... (Chart rendering logic is complex but robust, no major changes needed here) ...
+        const sortedMonths = Object.keys(monthlyData).sort();
+        const chartLabels = sortedMonths.map(m => new Date(m + '-02').toLocaleString('default', { month: 'short', year: 'numeric' }));
+        const incomeData = sortedMonths.map(m => monthlyData[m].income);
+        const showForecast = document.getElementById('forecastToggle').checked;
+        const forecastDatasets = [];
+        if (showForecast && incomeData.length > 1) {
+            const { slope, intercept } = linearRegression(incomeData.map((y, i) => ({ x: i, y })));
+            if (!isNaN(slope) && !isNaN(intercept)) {
+                const forecastData = Array(6).fill(null).map((_, i) => slope * (incomeData.length + i) + intercept);
+                forecastDatasets.push({ label: 'Income Forecast', data: [...Array(incomeData.length).fill(null), ...forecastData], borderColor: 'rgba(46, 204, 113, 0.5)', borderDash: [5, 5], fill: false, tension: 0.1 });
+            }
+        }
+        drawChart('trendsChart', 'line', { labels: chartLabels, datasets: [{ label: 'Income', data: incomeData, borderColor: 'var(--success-color)', tension: 0.1, fill: false }, { label: 'Expense', data: sortedMonths.map(m => monthlyData[m].expense), borderColor: 'var(--danger-color)', tension: 0.1, fill: false }, ...forecastDatasets]}, { onClick: (evt) => handleChartClick(evt, sortedMonths) });
+        drawChart('compositionChart', 'doughnut', { labels: ['Orders Revenue', 'Storage Revenue'], datasets: [{ data: [totals.ordersRev, totals.storageRev], backgroundColor: ['#3498db', '#9b59b6'] }] });
+        const profitGoal = Number(document.getElementById('profitGoal').value);
+        const currentMonthKey = new Date().toISOString().slice(0, 7);
+        const currentMonthProfit = monthlyData[currentMonthKey] ? monthlyData[currentMonthKey].income - monthlyData[currentMonthKey].expense : 0;
+        const goalRemaining = Math.max(0, profitGoal - currentMonthProfit);
+        drawChart('goalGaugeChart', 'doughnut', { labels: ['Profit Achieved', 'Remaining'], datasets: [{ data: [currentMonthProfit, goalRemaining], backgroundColor: ['var(--success-color)', 'var(--border-color)'], circumference: 180, rotation: 270 }]}, { cutout: '60%' });
+    }
+    
+    // FIX: Optimized and corrected data table rendering with robust sorting
+    function renderDataTable() {
+        const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
+        const typeFilter = document.getElementById('tableTypeFilter').value;
+        const table = document.getElementById('dataTable');
+        
+        // Sorting logic
+        const sortData = (a, b) => {
+            const col = dashboardState.sortColumn;
+            let valA = a[col], valB = b[col];
+            if (col === 'date') {
+                valA = new Date(valA).getTime();
+                valB = new Date(valB).getTime();
+            }
+            if (col === 'amount') {
+                valA = Number(valA);
+                valB = Number(valB);
+            }
+            if (valA < valB) return dashboardState.sortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return dashboardState.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        };
+
+        const filteredData = currentTransactions
+            .filter(t => (Object.values(t).join(' ').toLowerCase().includes(searchTerm)) && (typeFilter ? t.type === typeFilter : true))
+            .sort(sortData);
+
+        // Render table
+        const headers = [ {key: 'date', name: 'Date'}, {key: 'type', name: 'Type'}, {key: 'description', name: 'Description'}, {key: 'amount', name: 'Amount'} ];
+        const headerHTML = headers.map(h => {
+            const sortClass = dashboardState.sortColumn === h.key ? `sort-${dashboardState.sortDirection}` : '';
+            return `<th class="${sortClass}" data-sort="${h.key}">${h.name}</th>`;
+        }).join('');
+        const bodyHTML = filteredData.map(t => `<tr><td>${new Date(t.date).toLocaleDateString()}</td><td>${t.type}</td><td>${t.description}</td><td>R ${t.amount.toLocaleString()}</td></tr>`).join('');
+        table.innerHTML = `<thead><tr>${headerHTML}</tr></thead><tbody>${bodyHTML}</tbody>`;
+    }
+
+    // --- Main Controller ---
+    async function generateDashboard() {
+        if (!db) { alert("Database connection not available."); return; }
+        document.getElementById('loading').style.display = 'block';
+        document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+        
+        try {
+            const data = await loadData();
+            let startDate = document.getElementById('startDate').value;
+            let endDate = document.getElementById('endDate').value;
+
+            if (dashboardState.drillDownMonth) {
+                const year = parseInt(dashboardState.drillDownMonth.split('-')[0]);
+                const month = parseInt(dashboardState.drillDownMonth.split('-')[1]);
+                startDate = new Date(year, month - 1, 1).toISOString().slice(0,10);
+                endDate = new Date(year, month, 0).toISOString().slice(0,10);
+                document.getElementById('resetViewBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('resetViewBtn').style.display = 'none';
+            }
+
+            const currentPeriod = processData(data, startDate, endDate);
+            const prevEndDate = new Date(new Date(startDate) - 1);
+            const prevStartDate = new Date(prevEndDate.getTime() - (new Date(endDate) - new Date(startDate)));
+            const previousPeriod = processData(data, prevStartDate.toISOString().slice(0,10), prevEndDate.toISOString().slice(0,10));
+            
+            currentTransactions = currentPeriod.transactions;
+            
+            renderKPIs(currentPeriod.totals, previousPeriod.totals);
+            renderCharts(currentPeriod.totals, currentPeriod.monthlyData);
+            renderDataTable();
+        } catch (e) {
+            console.error("Dashboard generation failed:", e);
+        } finally {
+            // FIX: Ensure content is visible after loading
+            document.getElementById('loading').style.display = 'none';
+            document.querySelector('.tab-content.active').style.display = 'block';
+        }
+    }
+
+    function resetDashboardView() {
+        dashboardState.drillDownMonth = null;
+        generateDashboard();
+    }
+    
+    // --- Helpers & Utilities ---
+    function openTab(evt, tabName) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    function handleChartClick(evt, sortedMonths) {
+        const points = charts['trendsChart'].getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+        if (points.length) { dashboardState.drillDownMonth = sortedMonths[points[0].index]; generateDashboard(); }
+    }
+    function drawChart(id, type, data, options = {}) {
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id), { type, data, options: { responsive: true, maintainAspectRatio: false, ...options } });
+    }
+    function linearRegression(data) {
+        if (data.length < 2) return { slope: NaN, intercept: NaN };
+        const n = data.length;
+        let sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0;
+        data.forEach(p => { sum_x += p.x; sum_y += p.y; sum_xy += p.x * p.y; sum_xx += p.x * p.x; });
+        const denominator = (n * sum_xx - sum_x * sum_x);
+        if (denominator === 0) return { slope: NaN, intercept: NaN }; // FIX: Prevent division by zero
+        const slope = (n * sum_xy - sum_x * sum_y) / denominator;
+        const intercept = (sum_y - slope * sum_x) / n;
+        return { slope, intercept };
+    }
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        html2canvas(document.getElementById('overview')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('l', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); pdf.save(`financial_overview_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
+    }
+    function exportToCSV() {
+        const headers = ['Date', 'Type', 'Description', 'Amount', 'Category'];
+        const rows = currentTransactions.map(t => [new Date(t.date).toLocaleDateString(), t.type, `"${t.description}"`, t.amount, t.category]);
+        const csv = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv));
+        link.setAttribute("download", `transactions_${new Date().toISOString().slice(0,10)}.csv`); link.click();
+    }
+    
+    // --- Event Listeners & Initial Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // FIX: Use event delegation for table sorting
+        document.getElementById('dataTable').addEventListener('click', (e) => {
+            const header = e.target.closest('th');
+            if (header && header.dataset.sort) {
+                const column = header.dataset.sort;
+                if (dashboardState.sortColumn === column) {
+                    dashboardState.sortDirection = dashboardState.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    dashboardState.sortColumn = column;
+                    dashboardState.sortDirection = 'asc';
+                }
+                renderDataTable();
+            }
+        });
+
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('endDate').valueAsDate = today;
+        document.getElementById('startDate').valueAsDate = firstDayOfMonth;
+        generateDashboard();
+    });
+</script>
+</body>
+</html>
+

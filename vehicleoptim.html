@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vehicle Optimization</title>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+<style>
+:root {
+  --primary: #6366f1;
+  --secondary: #8b5cf6;
+  --accent: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1e293b;
+  --light: #f8fafc;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  min-height: 100vh;
+  padding-top: 100px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  animation: backgroundShift 20s ease infinite;
+  z-index: -1;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* Header */
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 40px;
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.logo img {
+  width: 90px;
+  filter: brightness(0) invert(1);
+  transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.navbar {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.navbar a:hover::before {
+  left: 100%;
+}
+
+.navbar a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.header-btn {
+  display: flex;
+  gap: 15px;
+}
+
+.backbtn, .logoutbtn {
+  padding: 12px 24px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.backbtn {
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  color: white;
+}
+
+.logoutbtn {
+  background: linear-gradient(45deg, var(--danger), #dc2626);
+  color: white;
+}
+
+.backbtn:hover, .logoutbtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.8s ease;
+}
+
+.glass-card:hover::before {
+  left: 100%;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Service Section Styles */
+.service-section {
+  margin-bottom: 60px;
+  padding: 30px;
+  border-radius: 25px;
+  position: relative;
+}
+
+.service-section.standard {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));
+  border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.service-section.agricultural {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.1));
+  border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+.service-section.specialized {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+  border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.service-section.hazmat {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Title */
+.main-title {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 40px;
+  background: linear-gradient(45deg, #fff, #e0e7ff, #c7d2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+  to { text-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+}
+
+.section-title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 30px 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.section-title::before {
+  content: '';
+  width: 50px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.service-section.standard .section-title::before {
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+}
+
+.service-section.agricultural .section-title::before {
+  background: linear-gradient(45deg, #22c55e, #16a34a);
+}
+
+.service-section.specialized .section-title::before {
+  background: linear-gradient(45deg, #f59e0b, #d97706);
+}
+
+.service-section.hazmat .section-title::before {
+  background: linear-gradient(45deg, #ef4444, #dc2626);
+}
+
+/* Truck Controls */
+.truck-controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.truck-controls select,
+.truck-controls input,
+.truck-controls button {
+  padding: 15px 20px;
+  border: none;
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.truck-controls input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.truck-controls select:focus,
+.truck-controls input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.truck-controls button {
+  background: linear-gradient(45deg, var(--success), #059669);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.truck-controls button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+}
+
+/* Auto Assignment Section */
+.auto-assign-section {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 20px rgba(99, 102, 241, 0); }
+}
+
+.auto-assign-section h3 {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.auto-assign-section p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.auto-assign-btn {
+  background: linear-gradient(45deg, var(--success), var(--accent));
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 5px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.auto-assign-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.auto-assign-btn:hover::before {
+  left: 100%;
+}
+
+.auto-assign-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
+}
+
+.auto-assign-btn.clear-btn {
+  background: linear-gradient(45deg, var(--danger), #dc2626);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+.auto-assign-btn.clear-btn:hover {
+  box-shadow: 0 20px 40px rgba(239, 68, 68, 0.4);
+}
+
+/* Progress Bar */
+.truck-status {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.truck-status p {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin: 20px 0;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(45deg, var(--success), var(--accent));
+  border-radius: 20px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShine 2s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.progress-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Optimization Stats */
+.optimization-stats {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
+  color: white;
+  padding: 30px;
+  border-radius: 20px;
+  margin-bottom: 40px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideInLeft 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.stat-item:hover {
+  transform: translateY(-5px) scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #fff, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Booking Cards */
+.booking-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.booking-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 25px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.booking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.booking-card:hover::before {
+  transform: scaleX(1);
+}
+
+.booking-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.booking-card.optimized {
+  border: 2px solid var(--success);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(255, 255, 255, 0.1));
+  animation: optimizedGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes optimizedGlow {
+  from { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+  to { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+}
+
+.booking-card.optimized::after {
+  content: "⭐ OPTIMIZED";
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: linear-gradient(45deg, var(--success), #059669);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+  40%, 43% { transform: translate3d(0,-10px,0); }
+  70% { transform: translate3d(0,-5px,0); }
+  90% { transform: translate3d(0,-2px,0); }
+}
+
+.booking-card h3 {
+  color: white;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.booking-card p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.booking-card strong {
+  color: white;
+  font-weight: 600;
+}
+
+/* Priority Indicators */
+.priority-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 10px;
+  animation: pulse 2s infinite;
+}
+
+.priority-high {
+  background: linear-gradient(45deg, var(--danger), #dc2626);
+  color: white;
+}
+
+.priority-medium {
+  background: linear-gradient(45deg, var(--warning), #d97706);
+  color: white;
+}
+
+.priority-low {
+  background: linear-gradient(45deg, var(--success), #059669);
+  color: white;
+}
+
+/* Buttons */
+.booking-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  color: white;
+}
+
+.booking-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+}
+
+.booking-card button:disabled {
+  background: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loaded List */
+.loaded-list {
+  list-style: none;
+  padding: 0;
+}
+
+.loaded-list li {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 15px;
+  padding: 20px;
+  border-radius: 15px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.loaded-list li:hover {
+  transform: translateX(10px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.loaded-list button {
+  background: linear-gradient(45deg, var(--danger), #dc2626);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.loaded-list button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* In Route Button */
+.in-route-btn {
+  display: block;
+  margin: 40px auto;
+  padding: 20px 40px;
+  font-size: 1.2rem;
+  background: linear-gradient(45deg, var(--success), var(--accent));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.4s ease;
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.in-route-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.in-route-btn:hover::before {
+  left: 100%;
+}
+
+.in-route-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 25px 50px rgba(16, 185, 129, 0.4);
+}
+
+/* Footer */
+.copyright {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+  margin-top: 80px;
+}
+
+.social {
+  margin-top: 20px;
+}
+
+.social a {
+  color: white;
+  margin: 0 15px;
+  font-size: 24px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.social a:hover {
+  transform: translateY(-5px) scale(1.2);
+  color: var(--accent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .truck-controls {
+    grid-template-columns: 1fr;
+  }
+  
+  .booking-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .main-title {
+    font-size: 2rem;
+  }
+  
+  header {
+    flex-direction: column;
+    padding: 20px;
+  }
+  
+  .navbar {
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Service Type Tags */
+.service-tag {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.service-tag.standard {
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+}
+
+.service-tag.agricultural {
+  background: linear-gradient(45deg, #22c55e, #16a34a);
+}
+
+.service-tag.specialized {
+  background: linear-gradient(45deg, #f59e0b, #d97706);
+}
+
+.service-tag.hazmat {
+  background: linear-gradient(45deg, #ef4444, #dc2626);
+}
+
+/* Loading Animation */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<header>
+  <a href="#" class="logo"><img src="img/logo.jpg" alt="Logo"></a>
+  <ul class="navbar">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+  </ul>
+
+  <div class="header-btn">
+    <a href="admindashboard.html" class="backbtn">Back</a>
+    <a href="index.html" class="logoutbtn">Logout</a>
+  </div>
+</header>
+
+<div class="container">
+  <h1 class="main-title">🚛 Multi-Service Vehicle Optimization System</h1>
+
+  <!-- Standard Delivery Orders Section -->
+  <div class="service-section standard glass-card">
+    <h2 class="section-title">📦 Standard Delivery Orders</h2>
+    
+    <div class="truck-controls">
+      <select id="standardTruckSelector"></select>
+      <input type="text" id="standardNewTruckName" placeholder="New Truck Name">
+      <input type="number" id="standardNewTruckVolume" placeholder="Max Volume">
+      <button onclick="createTruck('standard')">Add Truck</button>
+    </div>
+    
+    <div class="auto-assign-section">
+      <h3>Standard Load Optimization</h3>
+      <p>Automatically optimize standard delivery bookings for maximum efficiency</p>
+      <button class="auto-assign-btn" onclick="autoOptimizeBookings('standard')" id="standardAutoAssignBtn">
+        ⚡ Auto-Assign Standard Bookings
+      </button>
+      <button class="auto-assign-btn clear-btn" onclick="clearTruckBookings('standard')">
+        🗑️ Clear Standard Bookings
+      </button>
+    </div>
+
+    <div class="optimization-stats" id="standardOptimizationStats" style="display: none;">
+      <h3>🎯 Standard Optimization Results</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="standardStatCapacityUsed">0%</div>
+          <div class="stat-label">Capacity Used</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="standardStatBookingsAssigned">0</div>
+          <div class="stat-label">Bookings Assigned</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="standardStatTotalValue">R0</div>
+          <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="standardStatTargetProvince">-</div>
+          <div class="stat-label">Target Province</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="truck-status">
+      <p>Used: <span id="standardUsed">0</span> m³</p>
+      <p>Remaining: <span id="standardRemaining">0</span> m³</p>
+      <div class="progress-bar-container">
+        <div id="standardProgressBar" class="progress-bar">
+          <span id="standardProgressLabel" class="progress-label">0%</span>
+        </div>
+      </div>
+      <p id="standardCapacityWarning" class="capacity-warning" style="display: none;"></p>
+    </div>
+
+   <div id="standardBookingList" class="booking-list"></div>
+    <ul id="standardLoadedList" class="loaded-list"></ul>
+    <button id="standardInRouteBtn" class="in-route-btn">🚚 Mark Standard Truck as In Route</button>
+  </div>
+
+  <!-- Agricultural Transport Section -->
+  <div class="service-section agricultural glass-card">
+    <h2 class="section-title">🚜 Agricultural Transport Orders</h2>
+    
+    <div class="truck-controls">
+      <select id="agriculturalTruckSelector"></select>
+      <input type="text" id="agriculturalNewTruckName" placeholder="New Agricultural Truck">
+      <input type="number" id="agriculturalNewTruckVolume" placeholder="Max Volume">
+      <button onclick="createTruck('agricultural')">Add Agricultural Truck</button>
+    </div>
+   
+    <div class="auto-assign-section">
+      <h3>Agricultural Load Optimization</h3>
+      <p>Optimize agricultural produce transport for freshness and efficiency</p>
+      <button class="auto-assign-btn" onclick="autoOptimizeBookings('agricultural')" id="agriculturalAutoAssignBtn">
+        ⚡ Auto-Assign Agricultural Bookings
+      </button>
+      <button class="auto-assign-btn clear-btn" onclick="clearTruckBookings('agricultural')">
+        🗑️ Clear Agricultural Bookings
+      </button>
+    </div>
+
+    <div class="optimization-stats" id="agriculturalOptimizationStats" style="display: none;">
+      <h3>🎯 Agricultural Optimization Results</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="agriculturalStatCapacityUsed">0%</div>
+          <div class="stat-label">Capacity Used</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="agriculturalStatBookingsAssigned">0</div>
+          <div class="stat-label">Bookings Assigned</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="agriculturalStatTotalValue">R0</div>
+          <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="agriculturalStatTargetProvince">-</div>
+          <div class="stat-label">Target Province</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="truck-status">
+      <p>Used: <span id="agriculturalUsed">0</span> m³</p>
+      <p>Remaining: <span id="agriculturalRemaining">0</span> m³</p>
+      <div class="progress-bar-container">
+        <div id="agriculturalProgressBar" class="progress-bar">
+          <span id="agriculturalProgressLabel" class="progress-label">0%</span>
+        </div>
+      </div>
+      <p id="agriculturalCapacityWarning" class="capacity-warning" style="display: none;"></p>
+    </div>
+
+    <div id="agriculturalBookingList" class="booking-list"></div>
+    <ul id="agriculturalLoadedList" class="loaded-list"></ul>
+    <button id="agriculturalInRouteBtn" class="in-route-btn">🚚 Mark Agricultural Truck as In Route</button>
+  </div>
+
+  <!-- Specialized Services Section -->
+  <div class="service-section specialized glass-card">
+    <h2 class="section-title">⚠️ Specialized Services Orders</h2>
+    
+    <div class="truck-controls">
+      <select id="specializedTruckSelector"></select>
+      <input type="text" id="specializedNewTruckName" placeholder="New Specialized Truck">
+      <input type="number" id="specializedNewTruckVolume" placeholder="Max Volume">
+      <button onclick="createTruck('specialized')">Add Specialized Truck</button>
+    </div>
+    
+    
+
+    <div class="auto-assign-section">
+      <h3>Specialized Load Optimization</h3>
+      <p>Optimize specialized service bookings with safety and compliance priority</p>
+      <button class="auto-assign-btn" onclick="autoOptimizeBookings('specialized')" id="specializedAutoAssignBtn">
+        ⚡ Auto-Assign Specialized Bookings
+      </button>
+      <button class="auto-assign-btn clear-btn" onclick="clearTruckBookings('specialized')">
+        🗑️ Clear Specialized Bookings
+      </button>
+    </div>
+
+    <div class="optimization-stats" id="specializedOptimizationStats" style="display: none;">
+      <h3>🎯 Specialized Optimization Results</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="specializedStatCapacityUsed">0%</div>
+          <div class="stat-label">Capacity Used</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="specializedStatBookingsAssigned">0</div>
+          <div class="stat-label">Bookings Assigned</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="specializedStatTotalValue">R0</div>
+          <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="specializedStatTargetProvince">-</div>
+          <div class="stat-label">Target Province</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="truck-status">
+      <p>Used: <span id="specializedUsed">0</span> m³</p>
+      <p>Remaining: <span id="specializedRemaining">0</span> m³</p>
+      <div class="progress-bar-container">
+        <div id="specializedProgressBar" class="progress-bar">
+          <span id="specializedProgressLabel" class="progress-label">0%</span>
+        </div>
+      </div>
+      <p id="specializedCapacityWarning" class="capacity-warning" style="display: none;"></p>
+    </div>
+
+    <div id="specializedBookingList" class="booking-list"></div>
+    <ul id="specializedLoadedList" class="loaded-list"></ul>
+    <button id="specializedInRouteBtn" class="in-route-btn">🚚 Mark Specialized Truck as In Route</button>
+  </div>
+
+  
+
+<div class="copyright">
+  <p>&#169; Securemove Logistics All Rights Reserved</p>
+  <div class="social">
+    <a href="https://www.instagram.com/securemove_logistics/" target="_blank">
+      <i class="bx bxl-instagram"></i>
+    </a>
+    <a href="https://wa.me/27793868100" target="_blank">
+      <i class="bx bxl-whatsapp"></i>
+    </a>
+  </div>
+</div>
+
+<script>
+
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const serviceTypes = ['standard', 'agricultural', 'specialized'];
+let allBookings = { standard: {}, agricultural: {}, specialized: {} };
+let allTrucks = { standard: {}, agricultural: {}, specialized: {} };
+let currentTruckIds = { standard: null, agricultural: null, specialized: null };
+
+
+function initializeTrucksListeners() {
+  const setupTruckListener = (type) => {
+    const truckPath = `${type}Trucks`; // e.g., 'standardTrucks', 'agriculturalTrucks'
+    db.ref(truckPath).on("value", snapshot => {
+      allTrucks[type] = snapshot.val() || {};
+      renderTruckSelector(type);
+      updateTruckUI(type);
+    });
+  };
+  serviceTypes.forEach(type => setupTruckListener(type));
+}
+
+
+function initializeBookingsListener() {
+  db.ref("Orders").on("value", snapshot => {
+    const allOrdersFromDB = snapshot.val() || {};
+    
+    // Reset local booking objects before refilling them
+    allBookings = { standard: {}, agricultural: {}, specialized: {} };
+
+    for (const key in allOrdersFromDB) {
+      const booking = allOrdersFromDB[key];
+      booking.id = key; // Ensure the ID is attached to the object
+
+      
+      let serviceType;
+      switch (booking.type) {
+        case "Standard Transport":
+          serviceType = 'standard';
+          break;
+        case "Agricultural Transport":
+          serviceType = 'agricultural';
+          break;
+        case "Specialized Transport":
+          serviceType = 'specialized';
+          break;
+        default:
+          // This will skip any booking that doesn't have a recognized type
+          continue; 
+      }
+
+      // If a valid serviceType was determined, add the booking to the correct group.
+      if (serviceType) {
+        allBookings[serviceType][key] = booking;
+      }
+    }
+    
+    // Now that all bookings are sorted, render the cards for each section.
+    serviceTypes.forEach(type => {
+      renderBookingCards(type);
+    });
+  });
+}
+
+
+
+
+function renderTruckSelector(serviceType) {
+  const previousTruckId = currentTruckIds[serviceType];
+  const truckSelector = document.getElementById(`${serviceType}TruckSelector`);
+  truckSelector.innerHTML = "";
+  const trucksForService = allTrucks[serviceType];
+  for (let id in trucksForService) {
+    const truck = trucksForService[id];
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = truck.status === 'in_route' ? `${truck.name} - (In Route)` : `${truck.name} (${truck.maxVolume} m³)`;
+    option.disabled = truck.status === 'in_route';
+    truckSelector.appendChild(option);
+  }
+  const previouslySelectedTruck = trucksForService[previousTruckId];
+  if (previouslySelectedTruck && previouslySelectedTruck.status !== 'in_route') {
+    truckSelector.value = previousTruckId;
+  } else {
+    const firstAvailable = truckSelector.querySelector("option:not([disabled])");
+    truckSelector.value = firstAvailable ? firstAvailable.value : "";
+  }
+  currentTruckIds[serviceType] = truckSelector.value;
+  updateTruckUI(serviceType); 
+}
+
+function updateTruckUI(serviceType) {
+    const truckId = currentTruckIds[serviceType];
+    const truck = allTrucks[serviceType][truckId];
+    const autoAssignBtn = document.getElementById(`${serviceType}AutoAssignBtn`);
+    const clearBookingsBtn = document.querySelector(`button[onclick="clearTruckBookings('${serviceType}')"]`);
+    const inRouteBtn = document.getElementById(`${serviceType}InRouteBtn`);
+    if (!truck) {
+        if(autoAssignBtn) autoAssignBtn.disabled = true;
+        if(clearBookingsBtn) clearBookingsBtn.disabled = true;
+        if(inRouteBtn) inRouteBtn.disabled = true;
+        document.getElementById(`${serviceType}Used`).textContent = '0';
+        document.getElementById(`${serviceType}Remaining`).textContent = '0';
+        document.getElementById(`${serviceType}ProgressBar`).style.width = `0%`;
+        document.getElementById(`${serviceType}ProgressLabel`).textContent = `0%`;
+        document.getElementById(`${serviceType}LoadedList`).innerHTML = "";
+        updateOptimizationStats(serviceType);
+        renderBookingCards(serviceType);
+        return;
+    }
+    const isTruckInRoute = truck.status === 'in_route';
+    autoAssignBtn.disabled = isTruckInRoute;
+    clearBookingsBtn.disabled = isTruckInRoute;
+    inRouteBtn.disabled = isTruckInRoute;
+    inRouteBtn.textContent = isTruckInRoute ? '🚚 Truck is In Route' : `🚚 Mark Truck as In Route`;
+    const used = truck.usedVolume || 0;
+    const remaining = truck.maxVolume - used;
+    const percentUsed = truck.maxVolume > 0 ? Math.round((used / truck.maxVolume) * 100) : 0;
+    document.getElementById(`${serviceType}Used`).textContent = used.toFixed(1);
+    document.getElementById(`${serviceType}Remaining`).textContent = remaining.toFixed(1);
+    document.getElementById(`${serviceType}ProgressBar`).style.width = `${percentUsed}%`;
+    document.getElementById(`${serviceType}ProgressLabel`).textContent = `${percentUsed}%`;
+    const list = document.getElementById(`${serviceType}LoadedList`);
+    list.innerHTML = "";
+    if (truck.bookings) {
+        for (let key in truck.bookings) {
+            const booking = truck.bookings[key];
+            const li = document.createElement("li");
+            li.innerHTML = `${booking.name || 'Unknown'} - ${booking.volume || 0} m³ <button onclick="removeBooking('${key}', '${serviceType}')" ${isTruckInRoute ? 'disabled' : ''}>Remove</button>`;
+            list.appendChild(li);
+        }
+    }
+    updateOptimizationStats(serviceType);
+    renderBookingCards(serviceType);
+}
+
+function renderBookingCards(serviceType) {
+    const container = document.getElementById(`${serviceType}BookingList`);
+    if (!container) return;
+    container.innerHTML = "";
+    const truck = allTrucks[serviceType][currentTruckIds[serviceType]];
+    const isTruckUnavailable = !truck || truck.status === 'in_route';
+    
+    Object.values(allBookings[serviceType]).forEach(booking => {
+        if (!booking.id || (booking.status && ["delivered", "in transit"].includes(booking.status.toLowerCase()))) return;
+        
+        const card = document.createElement("div");
+        card.className = "booking-card";
+        const volume = parseInt(booking.height || 0) * parseInt(booking.length || 0) * parseInt(booking.width || 0);
+        card.innerHTML = `<h3>Booking ID: ${booking.id.slice(-6)}</h3><p><strong>Name:</strong> ${booking.name || 'N/A'}</p><p><strong>Pickup Address:</strong> ${booking.pickup_address || 'N/A'}</p><p><strong>Dropoff Address:</strong> ${booking.dropoff_address || 'N/A'}</p><p><strong>Volume:</strong> ${volume} m³</p><p><strong>Price:</strong> R${booking.total_price || 0}</p><p><strong>Status:</strong> <span class="status-text">${booking.status || 'Pending'}</span></p>`;
+        const button = document.createElement("button");
+        const alreadyLoaded = isAlreadyInTruck(booking.id);
+        button.disabled = alreadyLoaded || isTruckUnavailable;
+        button.textContent = alreadyLoaded ? "Already Loaded" : (isTruckUnavailable ? "Truck Unavailable" : "Add to Truck");
+        button.onclick = () => addToTruck(booking.id, serviceType);
+        card.appendChild(button);
+        container.appendChild(card);
+    });
+}
+
+function isAlreadyInTruck(bookingId) {
+    for (const type of serviceTypes) {
+        for (const truckId in allTrucks[type]) {
+            if (allTrucks[type][truckId].bookings?.[bookingId]) return true;
+        }
+    }
+    return false;
+}
+
+function updateOptimizationStats(serviceType) {
+  const truck = allTrucks[serviceType][currentTruckIds[serviceType]];
+  const statsContainer = document.getElementById(`${serviceType}OptimizationStats`);
+  if (!truck || !truck.bookings || Object.keys(truck.bookings).length === 0) {
+    statsContainer.style.display = 'none';
+    return;
+  }
+  const bookings = Object.values(truck.bookings);
+  const totalVolume = bookings.reduce((sum, b) => sum + (b.volume || 0), 0);
+  const totalValue = bookings.reduce((sum, b) => sum + (parseFloat(b.total_price) || 0), 0);
+  const capacityUsed = (totalVolume / truck.maxVolume) * 100;
+  const provinceCount = bookings.reduce((acc, b) => {
+    const province = b.dropoff_province || 'Unknown';
+    acc[province] = (acc[province] || 0) + 1;
+    return acc;
+  }, {});
+  const targetProvince = Object.keys(provinceCount).length > 0 ? Object.keys(provinceCount).reduce((a, b) => provinceCount[a] > provinceCount[b] ? a : b) : '-';
+  document.getElementById(`${serviceType}StatCapacityUsed`).textContent = `${capacityUsed.toFixed(1)}%`;
+  document.getElementById(`${serviceType}StatBookingsAssigned`).textContent = bookings.length;
+  document.getElementById(`${serviceType}StatTotalValue`).textContent = `R${totalValue.toFixed(2)}`;
+  document.getElementById(`${serviceType}StatTargetProvince`).textContent = targetProvince;
+  statsContainer.style.display = 'block';
+}
+
+
+
+function optimizeBookingSelection(bookings, maxCapacity) {
+  const availableBookings = Object.values(bookings).filter(booking => {
+    if (!booking.id || (booking.status && ["delivered", "in transit"].includes(booking.status.toLowerCase()))) return false;
+    if (isAlreadyInTruck(booking.id)) return false;
+    return true;
+  });
+  if (availableBookings.length === 0) return [];
+  const provinceGroups = {};
+  availableBookings.forEach(booking => {
+    const province = booking.dropoff_province || 'Unknown';
+    if (!provinceGroups[province]) provinceGroups[province] = [];
+    provinceGroups[province].push(booking);
+  });
+  const scoredBookings = availableBookings.map(booking => {
+    const volume = parseInt(booking.height || 0) * parseInt(booking.length || 0) * parseInt(booking.width || 0);
+    const value = parseFloat(booking.total_price) || 0;
+    const loyaltyPoints = parseInt(booking.loyalty_points) || 0;
+    const valuePerVolume = volume > 0 ? value / volume : 0;
+    const pickupDate = new Date(booking.pickup_date);
+    const today = new Date();
+    const daysUntilPickup = Math.max(0, (pickupDate - today) / (1000 * 60 * 60 * 24));
+    const urgencyScore = daysUntilPickup <= 1 ? 3 : daysUntilPickup <= 3 ? 2 : 1;
+    const proximityBonus = booking.pickup_province === booking.dropoff_province ? 1.2 : 1.0;
+    const loyaltyBonus = 1 + (loyaltyPoints / 1000);
+    const volumeEfficiency = volume < 2 ? 0.8 : volume > 15 ? 0.9 : 1.1;
+    const efficiencyScore = (valuePerVolume * urgencyScore * proximityBonus * loyaltyBonus * volumeEfficiency);
+    return { ...booking, volume, value, efficiencyScore: efficiencyScore || 0 };
+  });
+  let bestSelection = [];
+  let bestScore = 0;
+  for (const [province, provinceBookings] of Object.entries(provinceGroups)) {
+    const sortedProvinceBookings = provinceBookings.map(b => scoredBookings.find(sb => sb.id === b.id)).sort((a, b) => (b.efficiencyScore || 0) - (a.efficiencyScore || 0));
+    let provinceSelection = [];
+    let remainingCapacity = maxCapacity;
+    for (const booking of sortedProvinceBookings) {
+      if (booking && booking.volume <= remainingCapacity) {
+        provinceSelection.push(booking);
+        remainingCapacity -= booking.volume;
+      }
+    }
+    const totalEfficiency = provinceSelection.reduce((sum, b) => sum + (b.efficiencyScore || 0), 0);
+    const combinedScore = totalEfficiency * ((maxCapacity - remainingCapacity) / maxCapacity);
+    if (combinedScore > bestScore && provinceSelection.length > 0) {
+      bestScore = combinedScore;
+      bestSelection = provinceSelection;
+    }
+  }
+  if (bestSelection.length === 0) {
+    const sortedBookings = scoredBookings.sort((a, b) => (b.efficiencyScore || 0) - (a.efficiencyScore || 0));
+    let remainingCapacity = maxCapacity;
+    for (const booking of sortedBookings) {
+      if (booking.volume <= remainingCapacity) {
+        bestSelection.push(booking);
+        remainingCapacity -= booking.volume;
+      }
+    }
+  }
+  return bestSelection;
+}
+
+function autoOptimizeBookings(serviceType) {
+  const truckId = currentTruckIds[serviceType];
+  const truck = allTrucks[serviceType][truckId];
+  if (!truck) { return alert(`Please select an available ${serviceType} truck first.`); }
+  const availableCapacity = truck.maxVolume - (truck.usedVolume || 0);
+  if (availableCapacity <= 0) { return alert("Truck is already at full capacity."); }
+  const optimizedBookings = optimizeBookingSelection(allBookings[serviceType], availableCapacity);
+  if (optimizedBookings.length === 0) { return alert("No suitable bookings found for optimization."); }
+  
+  const truckPath = `${serviceType}Trucks`;
+  let totalVolumeAdded = 0;
+  let totalValueAdded = 0;
+  const updates = {};
+
+  optimizedBookings.forEach(booking => {
+      updates[`/${truckPath}/${truckId}/bookings/${booking.id}`] = { ...booking, volume: booking.volume };
+      totalVolumeAdded += booking.volume;
+      totalValueAdded += booking.value;
+  });
+  updates[`/${truckPath}/${truckId}/usedVolume`] = (truck.usedVolume || 0) + totalVolumeAdded;
+  
+  db.ref().update(updates)
+    .then(() => {
+        const selectedProvince = optimizedBookings.length > 0 ? optimizedBookings[0].dropoff_province : 'Mixed';
+        const provinceBookingCount = optimizedBookings.filter(b => b.dropoff_province === selectedProvince).length;
+        alert(`✅ ${serviceType.toUpperCase()} Optimization Complete!\n📦 ${optimizedBookings.length} bookings added\n🚛 Total Volume: ${totalVolumeAdded.toFixed(1)} m³\n💰 Total Value: R${totalValueAdded.toFixed(2)}\n📍 Target Province: ${selectedProvince}\n🎯 Province Focus: ${provinceBookingCount}/${optimizedBookings.length} bookings`);
+    })
+    .catch(error => console.error("Optimization error:", error));
+}
+
+function createTruck(serviceType) {
+  const name = document.getElementById(`${serviceType}NewTruckName`).value.trim();
+  const volume = parseInt(document.getElementById(`${serviceType}NewTruckVolume`).value.trim());
+  if (!name || isNaN(volume) || volume <= 0) return alert("Please enter a valid truck name and volume.");
+  
+  const id = `truck_${Date.now()}`;
+  const truckPath = `${serviceType}Trucks`;
+  const newTruck = { name, maxVolume: volume, usedVolume: 0, bookings: {}, serviceType: serviceType, status: "available" };
+  
+  db.ref(`${truckPath}/${id}`).set(newTruck).then(() => {
+    document.getElementById(`${serviceType}NewTruckName`).value = "";
+    document.getElementById(`${serviceType}NewTruckVolume`).value = "";
+    alert(`Truck "${name}" created successfully!`);
+  }).catch(error => console.error("Create truck error:", error));
+}
+
+function addToTruck(bookingId, serviceType) {
+  const truckId = currentTruckIds[serviceType];
+  const truck = allTrucks[serviceType][truckId];
+  const booking = allBookings[serviceType][bookingId];
+  if (!truck || !booking) return;
+  
+  const volume = parseInt(booking.height || 0) * parseInt(booking.length || 0) * parseInt(booking.width || 0);
+  const projectedVolume = (truck.usedVolume || 0) + volume;
+  if (projectedVolume > truck.maxVolume) return alert("Cannot add booking. Exceeds truck capacity.");
+  
+  const truckPath = `${serviceType}Trucks`;
+  const updates = {};
+  updates[`/${truckPath}/${truckId}/usedVolume`] = projectedVolume;
+  updates[`/${truckPath}/${truckId}/bookings/${bookingId}`] = { ...booking, volume }; 
+  
+  db.ref().update(updates).catch(error => console.error("Add to truck error:", error));
+}
+
+function removeBooking(bookingId, serviceType) {
+  const truckId = currentTruckIds[serviceType];
+  const truck = allTrucks[serviceType][truckId];
+  if (!truck?.bookings?.[bookingId]) return;
+  
+  const booking = truck.bookings[bookingId];
+  const newUsedVolume = (truck.usedVolume || 0) - (booking.volume || 0);
+  const truckPath = `${serviceType}Trucks`;
+  const updates = {};
+  updates[`/${truckPath}/${truckId}/usedVolume`] = newUsedVolume < 0 ? 0 : newUsedVolume;
+  updates[`/${truckPath}/${truckId}/bookings/${bookingId}`] = null;
+  
+  db.ref().update(updates).catch(error => console.error("Remove booking error:", error));
+}
+
+function clearTruckBookings(serviceType) {
+    const truckId = currentTruckIds[serviceType];
+    if (!truckId) return alert("No truck selected.");
+    if (!confirm("Are you sure you want to clear all bookings from this truck?")) return;
+    
+    const truckPath = `${serviceType}Trucks`;
+    const updates = {};
+    updates[`/${truckPath}/${truckId}/usedVolume`] = 0;
+    updates[`/${truckPath}/${truckId}/bookings`] = null;
+    
+    db.ref().update(updates).catch(error => console.error("Clear bookings error", error));
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  serviceTypes.forEach(serviceType => {
+    document.getElementById(`${serviceType}TruckSelector`).addEventListener("change", (e) => {
+      currentTruckIds[serviceType] = e.target.value;
+      updateTruckUI(serviceType);
+    });
+
+    document.getElementById(`${serviceType}InRouteBtn`).addEventListener("click", () => {
+      const truckId = currentTruckIds[serviceType];
+      const truck = allTrucks[serviceType][truckId];
+      if (!truck) { return alert(`No ${serviceType} truck selected.`); }
+      if (truck.status === 'in_route') { return alert("This truck is already in route."); }
+      if (!truck.bookings || Object.keys(truck.bookings).length === 0) { return alert(`This truck has no bookings.`); }
+      
+      db.ref("/users").orderByChild("role").equalTo("driver").once("value").then(snapshot => {
+        if (!snapshot.exists()) { return alert("Error: No drivers found in the system."); }
+        const users = snapshot.val();
+
+        const availableDrivers = [];
+        for (const uid in users) {
+          if (users[uid].status === 'available' || !users[uid].status) {
+            availableDrivers.push({ id: uid, ...users[uid] });
+          }
+        }
+
+        if (availableDrivers.length === 0) {
+          return alert("Error: No available drivers found. They may all be on other routes.");
+        }
+
+        const assignedDriver = availableDrivers[0];
+
+        if (!confirm(`Assign AVAILABLE driver "${assignedDriver.name || assignedDriver.email}" and mark truck as In Route?`)) return;
+        
+        const updates = {};
+        const truckPath = `${serviceType}Trucks`;
+
+        updates[`/${truckPath}/${truckId}/status`] = "in_route";
+        updates[`/${truckPath}/${truckId}/assignedDriverId`] = assignedDriver.id;
+        updates[`/${truckPath}/${truckId}/bookings`] = null;
+        updates[`/${truckPath}/${truckId}/usedVolume`] = 0;
+        updates[`/users/${assignedDriver.id}/status`] = "in_route";
+
+        for (const bookingId in truck.bookings) {
+          updates[`/Orders/${bookingId}/status`] = "In Transit";
+        }
+        return db.ref().update(updates);
+      })
+      .then(() => alert(`Success! Truck is now In Route.`))
+      .catch(error => {
+          console.error("In Route error:", error);
+          alert("An error occurred. See console for details.");
+      });
+    });
+  });
+
+  // Initialize the application with the corrected listener functions
+  initializeTrucksListeners();
+  initializeBookingsListener();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Financial Dashboard</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --bg-light: #f8f9fa;
+            --bg-dark: #eeeff1;
+            --text-color: #333;
+            --border-color: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: auto; background: rgba(255,255,255,0.98); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 300; }
+        .controls { padding: 20px; background: var(--bg-light); border-bottom: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--secondary-color); }
+        input, select { padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; transition: all .3s ease; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(52,152,219,.1); }
+        .btn { background: linear-gradient(135deg, var(--primary-color), #2980b9); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all .3s ease; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(52,152,219,.3); }
+        .btn.export { background: linear-gradient(135deg, var(--success-color), #27ae60); }
+
+        .tabs { display: flex; background-color: var(--bg-light); padding: 0 30px; border-bottom: 1px solid var(--border-color); }
+        .tab-link { padding: 15px 25px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #7f8c8d; transition: all .3s ease; }
+        .tab-link.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        
+        .tab-content { display: none; padding: 30px; animation: fadeIn .5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.08); border-left: 5px solid var(--primary-color); }
+        .kpi-card h3 { font-size: 0.8rem; margin-bottom: 8px; color: #7f8c8d; text-transform: uppercase; }
+        .kpi-value { font-size: 1.8rem; font-weight: bold; color: var(--secondary-color); }
+        .kpi-card.profit-positive { border-color: var(--success-color); }
+        .kpi-card.profit-negative { border-color: var(--danger-color); }
+
+        .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .chart-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.08); height: 400px; }
+        .chart-title { font-size: 1.3rem; margin-bottom: 15px; text-align: center; color: var(--secondary-color); }
+        
+        #dataTableContainer { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 15px; text-align: left; font-size: 0.9rem; }
+        th { background: var(--bg-light); font-weight: 600; cursor: pointer; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f1f8ff; }
+
+        .loading { text-align:center; padding:50px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header"><h1>Advanced Financial Dashboard</h1></header>
+
+        <div class="controls">
+            <div class="form-group"><label for="startDate">Start Date</label><input type="date" id="startDate"></div>
+            <div class="form-group"><label for="endDate">End Date</label><input type="date" id="endDate"></div>
+            <button class="btn" onclick="generateDashboard()">Generate Dashboard</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-link active" onclick="openTab(event, 'overview')">Overview</div>
+            <div class="tab-link" onclick="openTab(event, 'dataExplorer')">Data Explorer</div>
+        </div>
+
+        <div id="overview" class="tab-content active">
+            <div id="kpiContainer" class="kpi-grid"></div>
+            <div id="chartGrid" class="chart-grid">
+                <div class="chart-container"><h3 class="chart-title">Monthly Performance Trends</h3><canvas id="trendsChart"></canvas></div>
+                <div class="chart-container"><h3 class="chart-title">Income Composition</h3><canvas id="compositionChart"></canvas></div>
+            </div>
+        </div>
+
+        <div id="dataExplorer" class="tab-content">
+            <div class="controls" style="justify-content: space-between; padding: 0 0 20px 0;">
+                <h3>All Transactions</h3>
+                <button class="btn export" onclick="exportToCSV()">Export to CSV</button>
+            </div>
+            <div id="dataTableContainer">
+                <table id="dataTable"></table>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading" style="display:none;"><div class="spinner"></div><p>Processing Data...</p></div>
+    </div>
+
+<script>
+
+
+    const expenseFieldAliases = { 'fuel_cost': 'Fuel Cost', 'maintenance': 'Maintenance', 'insurance': 'Insurance', 'salaries': 'Salaries', 'rent': 'Office Rent', 'utilities': 'Utilities' };
+    let db;
+    let charts = {};
+    let allTransactions = [];
+
+    // --- Firebase Initialization ---
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch (e) {
+        console.error("Firebase init failed:", e);
+        alert("Firebase initialization failed. Please check your firebaseConfig object and console for errors.");
+    }
+
+    // --- Core Data Processing ---
+    async function loadData() {
+        const paths = ["Orders", "StorageBookings", "financial_info"];
+        const promises = paths.map(path => db.ref(path).once("value").catch(() => ({ val: () => null })));
+        const [ordersSnap, storageSnap, expensesSnap] = await Promise.all(promises);
+        return {
+            orders: ordersSnap.val() || {},
+            storage: storageSnap.val() || {},
+            expenses: expensesSnap.val() || {}
+        };
+    }
+
+    function processData(data, startDate, endDate) {
+        allTransactions = [];
+        const monthlyData = {};
+        let totals = { income: 0, expense: 0, profit: 0, ordersRev: 0, storageRev: 0, orderCount: 0, storageCount: 0 };
+
+        const inRange = (dateStr) => {
+            if (!dateStr) return false;
+            const t = new Date(dateStr).getTime();
+            if (isNaN(t)) return false;
+            const start = startDate ? new Date(startDate).getTime() : 0;
+            const end = endDate ? new Date(endDate + "T23:59:59").getTime() : Infinity;
+            return t >= start && t <= end;
+        };
+
+        const addToMonthly = (dateStr, income = 0, expense = 0) => {
+            const month = new Date(dateStr).toISOString().slice(0, 7); // YYYY-MM
+            if (!monthlyData[month]) monthlyData[month] = { income: 0, expense: 0, profit: 0 };
+            monthlyData[month].income += income;
+            monthlyData[month].expense += expense;
+        };
+
+        Object.values(data.orders).forEach(o => {
+            if (inRange(o.pickup_date)) {
+                const amount = Number(o.total_price || 0);
+                totals.income += amount;
+                totals.ordersRev += amount;
+                totals.orderCount++;
+                addToMonthly(o.pickup_date, amount);
+                allTransactions.push({ date: o.pickup_date, type: 'Order', description: `Order #${o.orderid}`, amount, category: 'Income' });
+            }
+        });
+
+        Object.values(data.storage).forEach(s => {
+            if (inRange(s.bookingDate)) {
+                const amount = Number(s.totalPrice || 0);
+                totals.income += amount;
+                totals.storageRev += amount;
+                totals.storageCount++;
+                addToMonthly(s.bookingDate, amount);
+                allTransactions.push({ date: s.bookingDate, type: 'Storage', description: `${s.storageDuration} months for ${s.goodsType}`, amount, category: 'Income' });
+            }
+        });
+
+        Object.values(data.expenses).forEach(e => {
+            if (inRange(e.timestamp)) {
+                Object.entries(e).forEach(([key, value]) => {
+                    const category = expenseFieldAliases[key];
+                    if (category) {
+                        const amount = Number(value || 0);
+                        totals.expense += amount;
+                        addToMonthly(e.timestamp, 0, amount);
+                        allTransactions.push({ date: e.timestamp, type: 'Expense', description: category, amount: -amount, category });
+                    }
+                });
+            }
+        });
+
+        totals.profit = totals.income - totals.expense;
+        Object.keys(monthlyData).forEach(m => monthlyData[m].profit = monthlyData[m].income - monthlyData[m].expense);
+        
+        return { totals, monthlyData };
+    }
+
+    // --- UI Rendering ---
+    function renderKPIs(totals) {
+        const profitMargin = totals.income > 0 ? ((totals.profit / totals.income) * 100).toFixed(1) : 0;
+        const avgOrderRev = totals.orderCount > 0 ? (totals.ordersRev / totals.orderCount).toFixed(2) : 0;
+        const avgStorageRev = totals.storageCount > 0 ? (totals.storageRev / totals.storageCount).toFixed(2) : 0;
+        const profitClass = totals.profit >= 0 ? 'profit-positive' : 'profit-negative';
+        
+        const kpiContainer = document.getElementById('kpiContainer');
+        kpiContainer.innerHTML = `
+            <div class="kpi-card"><h3 class="kpi-title">Total Income</h3><p class="kpi-value">R ${totals.income.toLocaleString()}</p></div>
+            <div class="kpi-card"><h3 class="kpi-title">Total Expense</h3><p class="kpi-value">R ${totals.expense.toLocaleString()}</p></div>
+            <div class="kpi-card ${profitClass}"><h3 class="kpi-title">Net Profit</h3><p class="kpi-value">R ${totals.profit.toLocaleString()}</p></div>
+            <div class="kpi-card ${profitClass}"><h3 class="kpi-title">Profit Margin</h3><p class="kpi-value">${profitMargin}%</p></div>
+            <div class="kpi-card"><h3 class="kpi-title">Avg. Order Revenue</h3><p class="kpi-value">R ${avgOrderRev}</p></div>
+            <div class="kpi-card"><h3 class="kpi-title">Avg. Storage Revenue</h3><p class="kpi-value">R ${avgStorageRev}</p></div>
+        `;
+    }
+
+    function renderCharts(totals, monthlyData) {
+        const sortedMonths = Object.keys(monthlyData).sort();
+        const chartLabels = sortedMonths.map(m => new Date(m + '-02').toLocaleString('default', { month: 'short', year: 'numeric' }));
+        
+        drawChart('trendsChart', 'line', {
+            labels: chartLabels,
+            datasets: [
+                { label: 'Income', data: sortedMonths.map(m => monthlyData[m].income), borderColor: 'var(--success-color)', tension: 0.1, fill: false },
+                { label: 'Expense', data: sortedMonths.map(m => monthlyData[m].expense), borderColor: 'var(--danger-color)', tension: 0.1, fill: false },
+                { label: 'Profit', data: sortedMonths.map(m => monthlyData[m].profit), borderColor: 'var(--primary-color)', tension: 0.1, fill: false, borderDash: [5, 5] }
+            ]
+        });
+
+        drawChart('compositionChart', 'doughnut', {
+            labels: ['Orders Revenue', 'Storage Revenue'],
+            datasets: [{
+                data: [totals.ordersRev, totals.storageRev],
+                backgroundColor: ['#3498db', '#9b59b6']
+            }]
+        });
+    }
+    
+    function renderDataTable() {
+        const table = document.getElementById('dataTable');
+        table.innerHTML = `<thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead><tbody>
+            ${allTransactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+                <tr>
+                    <td>${new Date(t.date).toLocaleDateString()}</td>
+                    <td>${t.type}</td>
+                    <td>${t.description}</td>
+                    <td>R ${t.amount.toLocaleString()}</td>
+                    <td>${t.category}</td>
+                </tr>
+            `).join('')}
+        </tbody>`;
+    }
+    
+    // --- Chart Helper ---
+    function drawChart(canvasId, type, data) {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        charts[canvasId] = new Chart(document.getElementById(canvasId), { type, data, options: { responsive: true, maintainAspectRatio: false } });
+    }
+
+    // --- Main Controller ---
+    async function generateDashboard() {
+        // --- *** STEP 2: ADDED SAFEGUARD *** ---
+        if (!db) {
+            alert("Database connection is not available. Please check your Firebase configuration and ensure you are connected to the internet.");
+            console.error("Aborting dashboard generation: `db` is not initialized.");
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('overview').style.display = 'none';
+        document.getElementById('dataExplorer').style.display = 'none';
+
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        try {
+            const rawData = await loadData();
+            const { totals, monthlyData } = processData(rawData, startDate, endDate);
+            
+            renderKPIs(totals);
+            renderCharts(totals, monthlyData);
+            renderDataTable();
+
+        } catch (e) {
+            console.error("Dashboard generation failed:", e);
+            alert("Could not generate dashboard. Check console for errors.");
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+            document.querySelector('.tab-content.active').style.display = 'block';
+        }
+    }
+
+    // --- UI Helpers ---
+    function openTab(evt, tabName) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+        document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('active'));
+        document.getElementById(tabName).style.display = 'block';
+        evt.currentTarget.classList.add('active');
+    }
+
+    function exportToCSV() {
+        const headers = ['Date', 'Type', 'Description', 'Amount', 'Category'];
+        const rows = allTransactions.map(t => [new Date(t.date).toLocaleDateString(), t.type, `"${t.description.replace(/"/g, '""')}"`, t.amount, t.category]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `financial_report_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // --- Initial Load ---
+    window.onload = () => {
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        document.getElementById('startDate').value = firstDayOfMonth.toISOString().split('T')[0];
+        generateDashboard();
+    };
+</script>
+</body>
+</html>
+

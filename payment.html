@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Securemove Logistics - Payment</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+</head>
+<style>
+    /* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+
+header{
+    position: fixed;
+    width: 100%;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #eeeff1;
+    padding: 15px 100px;
+}
+
+.logo img{
+    width: 90px;
+}
+
+.navbar{
+    display: flex;
+}
+
+.navbar li{
+    position: relative;
+}
+
+.navbar a{
+    font-size: 1rem;
+    padding: 10px 20px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.navbar a::after{
+   content: "";
+   width: 0;
+   height: 3px;
+   background: var(--gradinet);
+   position: absolute;
+   bottom: -4px;
+   left: 0;
+   transition: 0.5s;
+}
+
+.navbar a:hover::after{
+    width: 100%;
+}
+.header-btn a {
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.sign-up {
+    background: #28a745;
+}
+
+.login {
+    background: #ff5733;
+}
+
+.header-btn a:hover {
+    opacity: 0.8;
+}
+
+/* Payment Section */
+.payment {
+    text-align: center;
+    padding: 200px 20px;
+    background: white;
+    margin: 30px auto;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.heading span {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.heading h1 {
+    margin-top: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.payment-container {
+    margin-top: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+    text-align: left;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    padding: 12px;
+    background: #007bff;
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #222;
+    color: white;
+    margin-top: 50px;
+}
+
+</style>
+<body>
+    <header>
+        <a href="index.html" class="logo"><img src="img/logo.jpg" alt="Logo" /></a>
+
+        <ul class="navbar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#services">Services</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="index.html#reviews">Reviews</a></li>
+            <li><a href="#payment">Payment</a></li>
+        </ul>
+        <div class="header-btn">
+            <a href="signuplogin.html" class="sign-up">Sign Up</a>
+            <a href="signuplogin.html" class="login">Login</a>
+        </div>
+    </header>
+
+    <section class="payment" id="payment">
+        <div class="heading">
+            <span>Secure Payment</span>
+            <h1>Complete Your Payment</h1>
+        </div>
+
+
+        <body>
+          
+          <div id="paypal-button-container"></div>
+        
+        
+        </body>
+     
+    </section>
+
+    <footer>
+        <p>&#169; Securemove Logistics All Rights Reserved</p>
+    </footer>
+
+   
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const price = localStorage.getItem("totalPriceUSD");
+         // Get the price from localStorage
+  
+        if (!price) {
+            alert("❌ Error: No price found. Please go back and accept the quote.");
+            return;
+        }
+  
+        // Render the PayPal button
+        paypal.Buttons({
+          // Configure the transaction
+          createOrder: function (data, actions) {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: price // Set the price dynamically from localStorage
+                }
+              }]
+            });
+          },
+    
+          // Finalize the transaction
+          onApprove: function (data, actions) {
+            return actions.order.capture().then(function (details) {
+              alert('✅ Payment successful! Transaction completed by ' + details.payer.name.given_name); 
+              setTimeout(function() {
+                window.location.href = "pickupdropoff.html"; // Redirect to Dashboard after 3 seconds
+            }, 3000);
+            });
+
+           
+          },
+    
+          // Handle payment cancellation
+          onCancel: function (data) {
+            alert('❌ Payment cancelled.');
+          },
+    
+          // Handle errors
+          onError: function (err) {
+            console.error(err);
+            alert('⚠️ An error occurred during the payment process.');
+          }
+        }).render('#paypal-button-container'); // Display PayPal buttons in the container
+    });
+  </script>
+  
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>

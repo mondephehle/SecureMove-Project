@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SecureMove - Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #b00000;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #b00000;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #b00000;
+      color: white;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #7a0000;
+    }
+
+    .call-btn {
+      background-color: #28a745;
+      margin: 5px;
+    }
+
+    .call-btn:hover {
+      background-color: #1e7e34;
+    }
+
+    #noData {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .chart-container {
+      width: 80%;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Emergency Popup */
+    #emergencyPopup {
+      display:none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 25px;
+      border: 3px solid #b00000;
+      border-radius: 12px;
+      z-index: 9999;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    #emergencyPopup h2 {
+      color:#b00000;
+      margin-bottom: 20px;
+    }
+    
+    #emergencyPopup pre {
+      white-space: pre-wrap;
+      text-align:left;
+      margin-bottom:15px;
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    
+    #emergencyPopup select {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .service-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .service-btn {
+      padding: 15px 10px;
+      font-size: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      background: white;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .service-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .service-btn.selected {
+      border-color: #b00000;
+      background-color: #ffe6e6;
+    }
+
+    .fire-btn { border-color: #dc3545; }
+    .ambulance-btn { border-color: #28a745; }
+    .police-btn { border-color: #007bff; }
+
+    /* Notification Toast */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(400px);
+      transition: all 0.3s ease;
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .notification.error {
+      background: #dc3545;
+    }
+
+    .status-assigned {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      color: #ffc107;
+      font-style: italic;
+    }
+
+    .assign-btn {
+      background-color: #17a2b8;
+      color: white;
+      padding: 5px 10px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+    }
+
+    .assign-btn:hover {
+      background-color: #138496;
+    }
+
+    .assign-btn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>SecureMove - Emergency Admin Dashboard</h1>
+
+  <div class="btn-container">
+    <button onclick="loadIncidents()">🔄 Refresh</button>
+    <button onclick="clearIncidents()">🗑️ Clear All Reports</button>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="incidentChart"></canvas>
+  </div>
+
+        <table id="incidentsTable">
+    <thead>
+      <tr>
+        <th>Date & Time</th>
+        <th>Incident Type</th>
+        <th>Location</th>
+        <th>Driver Username</th>
+        <th>Status</th>
+        <th>Service Dispatched</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="noData" style="display: none;">No incidents reported yet.</div>
+
+  <!-- Emergency Popup -->
+  <div id="emergencyPopup">
+    <h2>🚨 Emergency Reported</h2>
+    <pre id="popupDetails"></pre>
+
+    <label for="serviceSelection" style="display: block; margin: 10px 0; font-weight: bold;">Select Emergency Service:</label>
+    
+    <div class="service-buttons">
+      <div class="service-btn fire-btn" onclick="selectService('fire')">
+        🚒<br>Fire Department<br><small>082 911</small>
+      </div>
+      <div class="service-btn ambulance-btn" onclick="selectService('ambulance')">
+        🚑<br>Ambulance<br><small>083 123 1000</small>
+      </div>
+      <div class="service-btn police-btn" onclick="selectService('police')">
+        🚔<br>Police<br><small>084 124 3000</small>
+      </div>
+    </div>
+
+    <div style="margin: 20px 0;">
+      <button id="callServiceBtn" onclick="callEmergencyService()" disabled style="background-color: #28a745; font-size: 16px; padding: 12px 24px;">
+        📞 Call Selected Service
+      </button>
+    </div>
+
+    <button onclick="closePopup()" style="background-color:#555; margin-top: 10px;">Close</button>
+  </div>
+
+  <script>
+    let chart;
+    let lastIncidentCount = 0;
+    let selectedIncidentIndex = null;
+    let selectedService = null;
+
+    // Emergency service contact numbers (South African format)
+    const emergencyServices = {
+      fire: {
+        name: '🚒 Fire Department',
+        phone: '0766655230', // Fire emergency number
+        emoji: '🚒'
+      },
+      ambulance: {
+        name: '🚑 Ambulance Service', 
+        phone: '0766655230', // Ambulance service
+        emoji: '🚑'
+      },
+      police: {
+        name: '🚔 Police Service',
+        phone: '0766655230', // Police service
+        emoji: '🚔'
+      }
+    };
+
+    function loadIncidents() {
+      const tbody = document.querySelector('#incidentsTable tbody');
+      tbody.innerHTML = '';
+      const incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+
+      if (incidents.length === 0) {
+        document.getElementById('noData').style.display = 'block';
+        updateChart([]);
+        return;
+      } else {
+        document.getElementById('noData').style.display = 'none';
+      }
+
+      const counts = { Fire: 0, Accident: 0, Traffic: 0, Crime: 0, Other: 0 };
+
+      incidents.forEach((incident, index) => {
+        const row = document.createElement('tr');
+        const status = incident.dispatchedVehicle ? 
+          `<span class="status-assigned">✅ Service Dispatched</span>` : 
+          `<span class="status-pending">⏳ Pending Response</span>`;
+        
+        const actionButton = incident.dispatchedVehicle ? 
+          `<button class="assign-btn" disabled>Already Assigned</button>` :
+          `<button class="assign-btn" onclick="openAssignPopup(${index})">🚨 Assign Service</button>`;
+        
+        row.innerHTML = `
+          <td>${incident.dateTime}</td>
+          <td>${incident.type}</td>
+          <td>${incident.location}</td>
+          <td>${incident.driver || 'Unknown'}</td>
+          <td>${status}</td>
+          <td>${incident.dispatchedVehicle || '<i>Not assigned</i>'}</td>
+          <td>${actionButton}</td>
+        `;
+        tbody.appendChild(row);
+
+        if (counts.hasOwnProperty(incident.type)) {
+          counts[incident.type]++;
+        } else {
+          counts.Other++;
+        }
+      });
+
+      // Show popup for new incidents
+      if (incidents.length > lastIncidentCount) {
+        const newIncident = incidents[incidents.length - 1];
+        selectedIncidentIndex = incidents.length - 1;
+        showEmergencyPopup(newIncident);
+      }
+      lastIncidentCount = incidents.length;
+
+      updateChart(counts);
+    }
+
+    function updateChart(counts) {
+      const ctx = document.getElementById('incidentChart').getContext('2d');
+      const labels = ['Fire', 'Accident', 'Traffic', 'Crime', 'Other'];
+      const data = labels.map(type => counts[type] || 0);
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Number of Incidents',
+            data: data,
+            backgroundColor: [
+              '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#6c757d'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Emergency Incidents by Type'
+            }
+          },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function clearIncidents() {
+      if (confirm('Are you sure you want to delete all incident reports?')) {
+        localStorage.removeItem('incidents');
+        loadIncidents();
+        showNotification('All incident reports cleared', 'success');
+      }
+    }
+
+    function openAssignPopup(incidentIndex) {
+      const incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+      if (incidentIndex >= incidents.length) {
+        showNotification('Error: Incident not found', 'error');
+        return;
+      }
+
+      const incident = incidents[incidentIndex];
+      selectedIncidentIndex = incidentIndex;
+      showEmergencyPopup(incident);
+    }
+
+    function showEmergencyPopup(incident) {
+      document.getElementById('popupDetails').innerText =
+        `Type: ${incident.type}\nDriver: ${incident.driver || 'Unknown'}\nLocation: ${incident.location}\nTime: ${incident.dateTime}`;
+      
+      // Reset service selection
+      selectedService = null;
+      document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('selected'));
+      document.getElementById('callServiceBtn').disabled = true;
+      
+      document.getElementById('emergencyPopup').style.display = 'block';
+    }
+
+    function selectService(service) {
+      selectedService = service;
+      
+      // Update UI
+      document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('selected'));
+      document.querySelector(`.${service}-btn`).classList.add('selected');
+      document.getElementById('callServiceBtn').disabled = false;
+    }
+
+    function callEmergencyService() {
+      if (!selectedService) {
+        showNotification('Please select an emergency service first', 'error');
+        return;
+      }
+
+      const service = emergencyServices[selectedService];
+      const incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+      
+      if (selectedIncidentIndex === null || selectedIncidentIndex >= incidents.length) {
+        showNotification('Error: Invalid incident selected', 'error');
+        return;
+      }
+
+      // Update incident with dispatched service
+      incidents[selectedIncidentIndex].dispatchedVehicle = service.name;
+      incidents[selectedIncidentIndex].servicePhone = service.phone;
+      incidents[selectedIncidentIndex].notificationSent = true;
+      incidents[selectedIncidentIndex].dispatchTime = new Date().toLocaleString();
+      
+      localStorage.setItem('incidents', JSON.stringify(incidents));
+
+      // Make the phone call
+      const phoneNumber = service.phone;
+      showNotification(`Calling ${service.name} at ${phoneNumber}...`, 'success');
+      
+      // Attempt to make the call
+      setTimeout(() => {
+        window.location.href = `tel:${phoneNumber}`;
+      }, 1000);
+
+      // Send notification to driver
+      sendDriverNotification(incidents[selectedIncidentIndex], service);
+
+      // Update table immediately
+      loadIncidents();
+      closePopup();
+    }
+
+    function sendDriverNotification(incident, service) {
+      // Simulate sending notification to driver
+      // In a real application, this would be an API call to your notification service
+      
+      const notificationMessage = {
+        to: incident.driver,
+        title: "🚨 Emergency Response Dispatched",
+        body: `Help is on the way! ${service.name} has been contacted and dispatched to your location: ${incident.location}. Please stay safe and wait for assistance.`,
+        timestamp: new Date().toISOString(),
+        incidentId: selectedIncidentIndex,
+        serviceType: service.name
+      };
+
+      // Store notification in localStorage (in real app, send via API)
+      const notifications = JSON.parse(localStorage.getItem('driverNotifications') || '[]');
+      notifications.push(notificationMessage);
+      localStorage.setItem('driverNotifications', JSON.stringify(notifications));
+
+      showNotification(`Driver ${incident.driver} has been notified that ${service.name} is coming to help`, 'success');
+      
+      // Log the notification action
+      console.log('Driver notification sent:', notificationMessage);
+    }
+
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 4000);
+    }
+
+    function closePopup() {
+      document.getElementById('emergencyPopup').style.display = 'none';
+      selectedService = null;
+    }
+
+    // Auto-refresh every 30 seconds to check for new incidents
+    window.onload = loadIncidents;
+    setInterval(loadIncidents, 30 * 1000);
+
+    // Listen for storage changes (if multiple tabs are open)
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'incidents') {
+        loadIncidents();
+      }
+    });
+  </script>
+
+</body>
+</html>
+

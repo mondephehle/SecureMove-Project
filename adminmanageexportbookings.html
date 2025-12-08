@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <title>Manage Export Bookings</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+ 
+ <style>
+   body {
+     font-family: 'Inter', sans-serif;
+     margin: 0;
+     background: linear-gradient(45deg, #f4f7ff, #e7ecff, #b2c4ff);
+     background-size: 400% 400%;
+     animation: gradientAnimation 6s ease infinite;
+     color: #333;
+     overflow-x: hidden;
+     display: flex;
+     flex-direction: column;
+     min-height: 100vh;
+   }
+ 
+   /* Header and Footer */
+   .admin-header,
+   .admin-footer {
+     background-color: #1f2937;
+     color: #fff;
+     padding: 1.5rem;
+     text-align: center;
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     width: 100%;
+   }
+ 
+   .admin-header h1 {
+     font-size: 2.5rem;
+     margin: 0;
+     letter-spacing: 1px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 15px;
+   }
+
+   .admin-header h1 i {
+     font-size: 2.5rem;
+   }
+ 
+   /* Navigation Buttons */
+   .admin-nav .btn {
+     background: #3b82f6;
+     color: white;
+     padding: 0.6rem 1.2rem;
+     margin: 0.5rem;
+     border: none;
+     text-decoration: none;
+     border-radius: 10px;
+     transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     animation: fadeIn 0.5s ease forwards;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+   }
+ 
+   .admin-nav .btn:hover {
+     background: #2563eb;
+     transform: translateY(-2px);
+     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+   }
+ 
+   @keyframes gradientAnimation {
+     0% { background-position: 0% 50%; }
+     50% { background-position: 100% 50%; }
+     100% { background-position: 0% 50%; }
+   }
+ 
+   .container {
+     width: 95%;
+     max-width: 1400px;
+     margin: 40px auto;
+     background: #fff;
+     padding: 30px 40px;
+     border-radius: 20px;
+     box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+     animation: fadeInUp 1s ease-out;
+     flex-grow: 1;
+     overflow-x: auto;
+   }
+ 
+   h1 {
+     text-align: center;
+     font-size: 2.5rem;
+     margin-bottom: 30px;
+     color: #1a237e;
+     letter-spacing: 1px;
+     animation: fadeIn 1.5s ease-in-out;
+   }
+ 
+   @keyframes fadeIn {
+     0% { opacity: 0; }
+     100% { opacity: 1; }
+   }
+ 
+   table {
+     width: 100%;
+     border-collapse: collapse;
+     animation: fadeIn 1s ease-in-out;
+     min-width: 1200px;
+   }
+ 
+   th, td {
+     padding: 16px;
+     text-align: left;
+     border-bottom: 1px solid #ddd;
+     font-size: 0.95rem;
+     transition: background-color 0.3s ease;
+   }
+ 
+   th {
+     background-color: #3f51b5;
+     color: white;
+     position: sticky;
+     top: 0;
+     font-size: 1rem;
+     font-weight: 600;
+     z-index: 10;
+   }
+ 
+   td {
+     background-color: #fafafa;
+     color: #555;
+     transition: background-color 0.3s ease;
+   }
+ 
+   tr:hover td {
+     background-color: #f1f1f1;
+   }
+
+   .transport-badge {
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+     color: white;
+     padding: 6px 12px;
+     border-radius: 15px;
+     font-size: 0.85rem;
+     font-weight: 600;
+   }
+
+   .transport-badge i {
+     font-size: 1rem;
+   }
+
+   .package-badge {
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+     color: white;
+     padding: 5px 10px;
+     border-radius: 12px;
+     font-size: 0.8rem;
+     font-weight: 600;
+     margin-top: 4px;
+   }
+
+   .package-badge i {
+     font-size: 0.9rem;
+   }
+ 
+   .status-badge {
+     padding: 6px 12px;
+     border-radius: 15px;
+     font-size: 0.85rem;
+     font-weight: 600;
+     display: inline-block;
+   }
+
+   .status-pending {
+     background: #fff3cd;
+     color: #856404;
+   }
+
+   .status-approved {
+     background: #d4edda;
+     color: #155724;
+   }
+
+   .status-in-transit {
+     background: #cce5ff;
+     color: #004085;
+   }
+
+   .status-delivered {
+     background: #d1ecf1;
+     color: #0c5460;
+   }
+
+   .status-rejected {
+     background: #f8d7da;
+     color: #721c24;
+   }
+
+   .status-custom {
+     background: #d1ecf1;
+     color: #0c5460;
+   }
+ 
+   .status-select {
+     padding: 8px;
+     border-radius: 6px;
+     border: 1px solid #ccc;
+     background-color: #f9f9f9;
+     transition: background-color 0.3s ease, transform 0.3s ease;
+     font-size: 0.9rem;
+     min-width: 140px;
+   }
+ 
+   .status-select:hover {
+     background-color: #e1e1e1;
+     transform: scale(1.02);
+   }
+ 
+   .update-btn {
+     padding: 10px 16px;
+     background-color: #4caf50;
+     color: white;
+     border: none;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: background-color 0.3s ease, transform 0.3s ease;
+     font-size: 0.95rem;
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+   }
+ 
+   .update-btn:hover {
+     background-color: #388e3c;
+     transform: translateY(-3px);
+   }
+ 
+   .update-btn:active {
+     transform: translateY(1px);
+   }
+
+   .view-btn {
+     padding: 8px 14px;
+     background-color: #2196f3;
+     color: white;
+     border: none;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+     font-size: 0.9rem;
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     margin-left: 5px;
+   }
+
+   .view-btn:hover {
+     background-color: #1976d2;
+   }
+ 
+   .toast {
+     position: fixed;
+     bottom: 30px;
+     right: 30px;
+     background: #323232;
+     color: white;
+     padding: 12px 18px;
+     border-radius: 10px;
+     opacity: 0;
+     animation: slideIn 0.5s forwards;
+     z-index: 1000;
+   }
+ 
+   @keyframes slideIn {
+     from { transform: translateY(30px); opacity: 0; }
+     to { transform: translateY(0); opacity: 1; }
+   }
+ 
+   @keyframes fadeInUp {
+     from { opacity: 0; transform: translateY(20px); }
+     to { opacity: 1; transform: translateY(0); }
+   }
+
+   .stats-bar {
+     display: flex;
+     justify-content: space-around;
+     margin-bottom: 30px;
+     gap: 20px;
+     flex-wrap: wrap;
+   }
+
+   .stat-card {
+     background: white;
+     padding: 20px;
+     border-radius: 15px;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+     text-align: center;
+     flex: 1;
+     min-width: 150px;
+   }
+
+   .stat-card i {
+     font-size: 2.5rem;
+     margin-bottom: 10px;
+   }
+
+   .stat-card.total i { color: #3b82f6; }
+   .stat-card.pending i { color: #ffc107; }
+   .stat-card.approved i { color: #28a745; }
+   .stat-card.transit i { color: #17a2b8; }
+   .stat-card.delivered i { color: #6c757d; }
+
+   .stat-card h3 {
+     font-size: 2rem;
+     margin: 10px 0 5px;
+     color: #333;
+   }
+
+   .stat-card p {
+     color: #666;
+     font-size: 0.9rem;
+     margin: 0;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+   }
+
+   .modal {
+     display: none;
+     position: fixed;
+     z-index: 1000;
+     left: 0;
+     top: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0,0,0,0.7);
+     overflow: auto;
+   }
+
+   .modal.show {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+   }
+
+   .modal-content {
+     background: white;
+     padding: 30px;
+     border-radius: 15px;
+     max-width: 700px;
+     width: 90%;
+     max-height: 80vh;
+     overflow-y: auto;
+     box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+   }
+
+   .modal-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 20px;
+     border-bottom: 2px solid #3f51b5;
+     padding-bottom: 15px;
+   }
+
+   .modal-header h2 {
+     color: #3f51b5;
+     margin: 0;
+   }
+
+   .close-modal {
+     font-size: 30px;
+     cursor: pointer;
+     color: #999;
+   }
+
+   .close-modal:hover {
+     color: #333;
+   }
+
+   .detail-row {
+     display: grid;
+     grid-template-columns: 200px 1fr;
+     gap: 10px;
+     padding: 12px 0;
+     border-bottom: 1px solid #eee;
+   }
+
+   .detail-row strong {
+     color: #666;
+   }
+
+   .detail-row span {
+     color: #333;
+   }
+ 
+ </style>
+ 
+ <!-- Firebase SDK -->
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+ 
+ <!--Email-->
+ <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+ 
+<script>
+ // Initialize EmailJS with your public key
+ (function() {
+   emailjs.init("0gGEZTE0vmwEHnIPT");
+ })();
+</script>
+ 
+</head>
+<body>
+ 
+ <header class="admin-header">
+   <h1><i class='bx bxs-plane-alt'></i> Export Bookings Management</h1>
+   <nav class="admin-nav">
+     <a href="admindashboard.html" class="btn"><i class='bx bx-home'></i> Back to Dashboard</a>
+     <a href="admin_export_validation.html" class="btn"><i class='bx bx-check-shield'></i> Document Validation</a>
+   </nav>
+ </header>
+
+ <div class="container">
+   <!-- Statistics Bar -->
+   <div class="stats-bar">
+     <div class="stat-card total">
+       <i class='bx bx-package'></i>
+       <h3 id="stat-total">0</h3>
+       <p>Total Orders</p>
+     </div>
+     <div class="stat-card pending">
+       <i class='bx bx-time-five'></i>
+       <h3 id="stat-pending">0</h3>
+       <p>Pending</p>
+     </div>
+     <div class="stat-card approved">
+       <i class='bx bx-check-circle'></i>
+       <h3 id="stat-approved">0</h3>
+       <p>Approved</p>
+     </div>
+     <div class="stat-card transit">
+       <i class='bx bxs-truck'></i>
+       <h3 id="stat-transit">0</h3>
+       <p>In Transit</p>
+     </div>
+     <div class="stat-card delivered">
+       <i class='bx bx-check-double'></i>
+       <h3 id="stat-delivered">0</h3>
+       <p>Delivered</p>
+     </div>
+   </div>
+
+   <h1>🌍 Manage Export Shipments</h1>
+   <table>
+     <thead>
+       <tr>
+         <th>Order ID</th>
+         <th>Customer</th>
+         <th>Transport</th>
+         <th>Package Size</th>
+         <th>Origin</th>
+         <th>Destination</th>
+         <th>Cargo Type</th>
+         <th>Total Cost</th>
+         <th>Status</th>
+         <th>Actions</th>
+       </tr>
+     </thead>
+     <tbody id="bookings-table">
+       <!-- Populated by JavaScript -->
+     </tbody>
+   </table>
+ </div>
+ 
+ <footer class="admin-footer">
+   SecureMove Logistics &copy; 2025
+ </footer>
+ 
+ <div id="toast" class="toast" style="display: none;">Status updated</div>
+
+ <!-- Details Modal -->
+ <div id="detailsModal" class="modal">
+   <div class="modal-content">
+     <div class="modal-header">
+       <h2>Export Order Details</h2>
+       <span class="close-modal">&times;</span>
+     </div>
+     <div id="modalBody">
+       <!-- Populated by JavaScript -->
+     </div>
+   </div>
+ </div>
+ 
+ <script>
+ 
+   firebase.initializeApp(firebaseConfig);
+   const db = firebase.database();
+
+   let allOrders = [];
+ 
+   function showToast(message) {
+     const toast = document.getElementById("toast");
+     toast.textContent = message;
+     toast.style.display = "block";
+     toast.style.opacity = "1";
+     setTimeout(() => { 
+       toast.style.opacity = "0";
+       setTimeout(() => toast.style.display = "none", 300);
+     }, 2500);
+   }
+
+   function updateStatistics() {
+     const total = allOrders.length;
+     const pending = allOrders.filter(o => o.status === 'Pending Validation' || o.status === 'Approved').length;
+     const approved = allOrders.filter(o => o.status === 'Approved').length;
+     const transit = allOrders.filter(o => o.status === 'In Transit').length;
+     const delivered = allOrders.filter(o => o.status === 'Delivered').length;
+
+     document.getElementById('stat-total').textContent = total;
+     document.getElementById('stat-pending').textContent = pending;
+     document.getElementById('stat-approved').textContent = approved;
+     document.getElementById('stat-transit').textContent = transit;
+     document.getElementById('stat-delivered').textContent = delivered;
+   }
+
+   function getModeIcon(mode) {
+     if (mode === 'air') return 'bxs-plane-alt';
+     if (mode === 'sea') return 'bxs-ship';
+     if (mode === 'courier') return 'bxs-car';
+     return 'bx-package';
+   }
+
+   function getModeName(mode) {
+     if (mode === 'air') return 'Air Freight';
+     if (mode === 'sea') return 'Sea Freight';
+     if (mode === 'courier') return 'Courier';
+     return 'Unknown';
+   }
+
+   function getPackageSizeName(size) {
+     const names = {
+       small: 'Small',
+       medium: 'Medium',
+       large: 'Large',
+       xlarge: 'XL',
+       bulk: 'Bulk'
+     };
+     return names[size] || size;
+   }
+
+   function getPackageSizeDetails(size) {
+     const details = {
+       small: 'Up to 10 kg',
+       medium: '10-30 kg',
+       large: '30-70 kg',
+       xlarge: '70-250 kg',
+       bulk: '250+ kg'
+     };
+     return details[size] || 'N/A';
+   }
+
+   function formatText(text) {
+     if (!text) return 'N/A';
+     return text.charAt(0).toUpperCase() + text.slice(1).replace(/-/g, ' ');
+   }
+
+   function getStatusClass(status) {
+     if (!status || status === 'Pending Validation') return 'status-pending';
+     if (status === 'Approved') return 'status-approved';
+     if (status === 'In Transit') return 'status-in-transit';
+     if (status === 'Delivered') return 'status-delivered';
+     if (status === 'Rejected') return 'status-rejected';
+     if (status === 'Pending Custom Quote') return 'status-custom';
+     return 'status-pending';
+   }
+ 
+   function fetchBookings() {
+     const tableBody = document.getElementById("bookings-table");
+     tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;"><i class="bx bx-loader bx-spin" style="font-size: 2rem;"></i><br>Loading...</td></tr>';
+ 
+     db.ref("ExportOrders").once("value")
+       .then((snapshot) => {
+         const orders = snapshot.val();
+         console.log("🔥 Export orders snapshot:", orders);
+ 
+         if (!orders) {
+           console.warn("⚠️ No export orders found.");
+           tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No export bookings found</td></tr>';
+           return;
+         }
+
+         allOrders = [];
+         tableBody.innerHTML = '';
+ 
+         for (const id in orders) {
+           const booking = orders[id];
+           allOrders.push(booking);
+           console.log(`✅ Export Order [${id}]:`, booking);
+ 
+           const row = document.createElement("tr");
+
+           const modeIcon = getModeIcon(booking.transportMode);
+           const modeName = getModeName(booking.transportMode);
+           const packageName = getPackageSizeName(booking.packageSize);
+           const packageDetails = getPackageSizeDetails(booking.packageSize);
+           const statusClass = getStatusClass(booking.status);
+ 
+           row.innerHTML = `
+             <td><strong>#${booking.orderId}</strong></td>
+             <td>${booking.name || 'N/A'}</td>
+             <td>
+               <span class="transport-badge">
+                 <i class='bx ${modeIcon}'></i>
+                 ${modeName}
+               </span>
+             </td>
+             <td>
+               <span class="package-badge">
+                 <i class='bx bx-box'></i>
+                 ${packageName}
+               </span>
+               <br><small style="color: #666;">${packageDetails}</small>
+             </td>
+             <td>${formatText(booking.originCity)}</td>
+             <td>${formatText(booking.destinationContinent)}<br><small>${booking.destinationCountry || ''}</small></td>
+             <td>${formatText(booking.cargoType)}</td>
+             <td>${booking.pricing?.total || 'N/A'}</td>
+             <td>
+               <select class="status-select" data-id="${id}">
+                 <option value="Pending Validation" ${booking.status === "Pending Validation" ? "selected" : ""}>Pending Validation</option>
+                 <option value="Approved" ${booking.status === "Approved" ? "selected" : ""}>Approved</option>
+                 <option value="In Transit" ${booking.status === "In Transit" ? "selected" : ""}>In Transit</option>
+                 <option value="Delivered" ${booking.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                 <option value="Rejected" ${booking.status === "Rejected" ? "selected" : ""}>Rejected</option>
+                 <option value="Pending Custom Quote" ${booking.status === "Pending Custom Quote" ? "selected" : ""}>Pending Custom Quote</option>
+               </select>
+             </td>
+             <td>
+               <button class="update-btn" onclick="updateStatus('${id}')">
+                 <i class='bx bx-save'></i> Update
+               </button>
+               <button class="view-btn" onclick="viewDetails('${id}')">
+                 <i class='bx bx-show'></i> View
+               </button>
+             </td>
+           `;
+ 
+           tableBody.appendChild(row);
+         }
+
+         updateStatistics();
+       })
+       .catch((error) => {
+         console.error("❌ Error fetching bookings:", error);
+         tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: red;">Error loading bookings</td></tr>';
+       });
+   }
+
+   function viewDetails(bookingId) {
+     db.ref("ExportOrders/" + bookingId).once("value")
+       .then((snapshot) => {
+         const order = snapshot.val();
+         if (!order) return;
+
+         const modeIcon = getModeIcon(order.transportMode);
+         const modeName = getModeName(order.transportMode);
+         const packageName = getPackageSizeName(order.packageSize);
+         const packageFullDetails = getPackageSizeDetails(order.packageSize);
+
+         let docsHTML = '';
+         if (order.documents) {
+           if (order.documents.note) {
+             docsHTML = `<p style="color: #666; font-style: italic;">${order.documents.note}</p>`;
+           } else {
+             docsHTML = '<div style="margin-top: 10px;">';
+             for (const [key, doc] of Object.entries(order.documents)) {
+               if (doc.uploaded) {
+                 const docName = key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                 docsHTML += `
+                   <div style="padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px;">
+                     <i class='bx bx-file-blank' style='color: #28a745;'></i>
+                     <strong>${docName}:</strong> ${doc.name} (${(doc.size / 1024).toFixed(2)} KB)
+                   </div>
+                 `;
+               }
+             }
+             docsHTML += '</div>';
+           }
+         }
+
+         const modalBody = document.getElementById('modalBody');
+         modalBody.innerHTML = `
+           <div class="detail-row">
+             <strong>Order ID:</strong>
+             <span>#${order.orderId}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Customer Name:</strong>
+             <span>${order.name || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Email:</strong>
+             <span>${order.email || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Phone:</strong>
+             <span>${order.phone || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Transport Mode:</strong>
+             <span class="transport-badge"><i class='bx ${modeIcon}'></i> ${modeName}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Package Size:</strong>
+             <span>
+               <span class="package-badge"><i class='bx bx-box'></i> ${packageName} Package</span>
+               <br><small style="color: #666; margin-top: 5px; display: block;">${packageFullDetails}</small>
+             </span>
+           </div>
+           <div class="detail-row">
+             <strong>Status:</strong>
+             <span class="status-badge ${getStatusClass(order.status)}">${order.status || 'Pending Validation'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Origin City:</strong>
+             <span>${formatText(order.originCity)}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Destination:</strong>
+             <span>${formatText(order.destinationContinent)} - ${order.destinationCountry || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Cargo Type:</strong>
+             <span>${formatText(order.cargoType)}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Package Weight:</strong>
+             <span>${order.packageWeight || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Package Dimensions:</strong>
+             <span>${order.packageDimensions || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Cargo Description:</strong>
+             <span>${order.cargoDescription || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Base Fee:</strong>
+             <span>${order.pricing?.baseFee || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Transport Cost:</strong>
+             <span>${order.pricing?.transportCost || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Package Size Charge:</strong>
+             <span>${order.pricing?.packageCost || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Documentation Fee:</strong>
+             <span>${order.pricing?.docFee || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Total Cost:</strong>
+             <span style="font-size: 1.2rem; font-weight: bold; color: #3f51b5;">${order.pricing?.total || 'N/A'}</span>
+           </div>
+           <div class="detail-row">
+             <strong>Booking Date:</strong>
+             <span>${new Date(order.bookingDate).toLocaleString()}</span>
+           </div>
+           ${order.transportMode !== 'courier' ? `
+           <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+             <strong style="color: #3f51b5; font-size: 1.1rem;"><i class='bx bx-file'></i> Export Documents:</strong>
+             ${docsHTML}
+           </div>
+           ` : ''}
+           ${order.packageSize === 'bulk' ? `
+           <div style="margin-top: 20px; padding: 15px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 5px;">
+             <strong style="color: #0c5460;"><i class='bx bx-info-circle'></i> Bulk Shipment:</strong>
+             <p style="color: #0c5460; margin: 10px 0 0;">This shipment requires a custom quote. Please contact the customer to provide pricing.</p>
+           </div>
+           ` : ''}
+           ${order.rejectionReason ? `
+           <div style="margin-top: 20px; padding: 15px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 5px;">
+             <strong style="color: #721c24;"><i class='bx bx-error-circle'></i> Rejection Reason:</strong>
+             <p style="color: #721c24; margin: 10px 0 0;">${order.rejectionReason}</p>
+           </div>
+           ` : ''}
+           ${order.allocation ? `
+           <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+             <strong style="color: #3f51b5; font-size: 1.1rem;"><i class='bx bx-truck'></i> Resource Allocation:</strong>
+             <div style="margin-top: 10px;">
+               <div style="padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px;">
+                 <strong>Vehicle:</strong> ${order.allocation.vehicle || 'N/A'}
+               </div>
+               <div style="padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px;">
+                 <strong>Driver:</strong> ${order.allocation.driver || 'N/A'}
+               </div>
+               <div style="padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px;">
+                 <strong>Tracking Number:</strong> ${order.allocation.trackingNumber || 'N/A'}
+               </div>
+               ${order.allocation.containerNumber && order.allocation.containerNumber !== 'N/A' ? `
+               <div style="padding: 8px; background: #f8f9fa; margin: 5px 0; border-radius: 5px;">
+                 <strong>Container Number:</strong> ${order.allocation.containerNumber}
+               </div>
+               ` : ''}
+             </div>
+           </div>
+           ` : ''}
+         `;
+
+         document.getElementById('detailsModal').classList.add('show');
+       })
+       .catch((error) => {
+         console.error("Error fetching order details:", error);
+         showToast("❌ Error loading details");
+       });
+   }
+
+   // Modal close functionality
+   document.querySelector('.close-modal').addEventListener('click', () => {
+     document.getElementById('detailsModal').classList.remove('show');
+   });
+
+   window.addEventListener('click', (e) => {
+     const modal = document.getElementById('detailsModal');
+     if (e.target === modal) {
+       modal.classList.remove('show');
+     }
+   });
+ 
+   function updateStatus(bookingId) {
+     const select = document.querySelector(`.status-select[data-id="${bookingId}"]`);
+     const newStatus = select.value;
+ 
+     db.ref("ExportOrders/" + bookingId).once("value")
+       .then((snapshot) => {
+         const order = snapshot.val();
+ 
+         return db.ref("ExportOrders/" + bookingId).update({ status: newStatus })
+           .then(() => {
+             showToast("✅ Status updated successfully");
+ 
+             const emailParams = {
+               to_email: order.email,
+               to_name: order.name,
+               booking_id: order.orderId,
+               new_status: newStatus,
+               transport_mode: getModeName(order.transportMode),
+               destination: `${formatText(order.destinationContinent)} - ${order.destinationCountry}`
+             };
+ 
+             return emailjs.send("service_va5kbt3", "template_etf6n2b", emailParams);
+           })
+           .then(() => {
+             showToast("✅ Email notification sent");
+             console.log("✅ Email sent");
+             // Refresh the table
+             fetchBookings();
+           });
+       })
+       .catch((err) => {
+         showToast("❌ Failed to update status");
+         console.error(err);
+       });
+   }
+   
+   window.onload = fetchBookings;
+ </script>
+</body>
+</html>

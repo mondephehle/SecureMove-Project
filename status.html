@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securemove Logistics - Track Your Order</title>
+
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Box Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js" type="module"></script>
+</head>
+
+<style>
+.status-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: lightgray;
+  margin: 5px auto;
+  transition: background-color 0.3s ease;
+}
+
+.green {
+  background-color: green !important;
+}
+</style>
+
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" class="logo"><img src="img/logo.jpg" alt=""></a>
+        <ul class="navbar">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#services">Services</a></li>
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="index.html#reviews">Reviews</a></li>
+        </ul>
+        <div class="header-btn">
+            <a href="signuplogin.html" class="login">Login</a>
+        </div>
+        
+    </header>
+
+    <!-- Customer Track Status -->
+    <section class="track-status" id="track-status">
+        <div class="heading">
+            <span>Track Your Order</span>
+            <h1>Check the Status of Your Transport</h1>
+        </div>
+
+        <div class="track-status-container">
+            <div class="order-info">
+                <h2>Order Details</h2>
+                <p><strong>Customer Name:</strong> <span id="customer-name"></span></p>
+                <p><strong>Order ID:</strong> <input type="text" id="order-id" placeholder="Enter Order ID"></p>
+                <p><strong>Service:</strong> <span id="service"></span></p>
+                <p><strong>Pick-Up Location:</strong> <span id="pickup-location"></span></p>
+                <p><strong>Drop-Off Location:</strong> <span id="dropoff-location"></span></p>
+                <p><strong>Estimated Delivery Date:</strong> <span id="delivery-date"></span></p>
+            </div>
+
+            <!-- Status Display -->
+            <div class="status-display">
+                <h2>Status of Your Order</h2>
+                <div class="status-box">
+                    <span class="status-label">Current Status:</span>
+                    <span class="status" id="status">Awaiting Update</span>
+                </div>
+                <div class="status-box">
+                    <span class="status-label">Resolution:</span>
+                    <span class="status" id="resolution">Awaiting Update</span>
+                </div>
+                <div class="status-timeline">
+                    <div class="status-step">
+                        <span class="step-title">Pickup</span>
+                        <div class="status-circle" id="pickup-status"></div>
+                    </div>
+                    <div class="status-step">
+                        <span class="step-title">In Transit</span>
+                        <div class="status-circle" id="in-transit-status"></div>
+                    </div>
+                    <div class="status-step">
+                        <span class="step-title">Delivered</span>
+                        <div class="status-circle" id="delivered-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track Button -->
+            <div class="track-btn">
+                <button class="btn" id="track-btn">Track Order</button>
+            </div>
+        </div>
+        <div id="statusNotification" style="display: none; padding: 15px; background: #e6f7ff; color: #00529b; border: 1px solid #b3d8ff; border-radius: 8px; margin: 20px 0; font-weight: bold; text-align: center;">
+  <!-- Real-time order status updates will appear here -->
+</div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="copyright">
+            <p> &#169; Securemove Logistics All Rights Reserved</p>
+            <div class="social">
+                <a href="https://www.instagram.com/securemove_logistics/" class="social-icon"><i class="bx bxl-instagram"></i></a>
+                <a href="https://wa.me/27793868100" target="_blank"><i class="bx bxl-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script -->
+    <script type="module">
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let lastKnownStatus=null; 
+
+       document.getElementById("track-btn").addEventListener("click", () => {
+        const orderId = document.getElementById("order-id").value.trim();
+        if (orderId === "") {
+            alert("Please enter a valid Order ID.");
+            return;
+        }
+
+        const orderRef = ref(database, "Orders/" + orderId);
+
+        get(orderRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const order = snapshot.val();
+                updateUI(order, orderId);
+
+                // Set up real-time listener
+                onValue(orderRef, (liveSnapshot) => {
+                    const liveData = liveSnapshot.val();
+                    
+                    // Status updates
+                    if (liveData.status !== lastKnownStatus) {
+                        lastKnownStatus = liveData.status;
+                        updateStatusNotification(orderId, liveData.status);
+                        updateStatusBoxes(liveData.status);
+                        document.getElementById("status").innerText = liveData.status || "N/A";
+                    }
+
+                    // Resolution updates
+                    if (liveData.resolution) {
+                        document.getElementById("resolution").innerText = liveData.resolution;
+                        handleResolutionMessage(orderId, liveData.resolution);
+                    }
+                });
+
+            } else {
+                alert("Order not found.");
+            }
+        }).catch((error) => {
+            console.error("Error fetching data:", error);
+            alert("Failed to retrieve order status.");
+        });
+    });
+
+    function updateUI(order, orderId) {
+        const statusEl = document.getElementById("status");
+        const resolutionEl = document.getElementById("resolution");
+
+        statusEl.innerText = order.status || "Status not found";
+        resolutionEl.innerText = order.resolution || "No resolution yet";
+
+        document.getElementById("customer-name").innerText = order.name || "N/A";
+        document.getElementById("service").innerText = order.service || "Door to Door";
+        document.getElementById("pickup-location").innerText = order.pickup_address || "N/A";
+        document.getElementById("dropoff-location").innerText = order.dropoff_address || "N/A";
+        document.getElementById("delivery-date").innerText = order.dropoff_date || "N/A";
+
+        handleResolutionMessage(orderId, order.resolution);
+        updateStatusBoxes(order.status);
+    }
+    function updateStatusBoxes(status) {
+    // Reset all status circles
+    document.getElementById("pickup-status").classList.remove("green");
+    document.getElementById("in-transit-status").classList.remove("green");
+    document.getElementById("delivered-status").classList.remove("green");
+
+    // Update based on current status
+    if (status && status.includes("Picked")) {
+        document.getElementById("pickup-status").classList.add("green");
+    }
+    if (status && status.includes("Transit")) {
+        document.getElementById("pickup-status").classList.add("green");
+        document.getElementById("in-transit-status").classList.add("green");
+    }
+    if (status && status.includes("Delivered")) {
+        document.getElementById("pickup-status").classList.add("green");
+        document.getElementById("in-transit-status").classList.add("green");
+        document.getElementById("delivered-status").classList.add("green");
+    }
+}
+
+function updateStatusNotification(orderId, status) {
+    const notifBox = document.getElementById("statusNotification");
+    notifBox.textContent = `Order #${orderId} status updated to: ${status}`;
+    notifBox.style.display = "block";
+    
+    // Hide after 8 seconds
+    setTimeout(() => {
+        notifBox.style.display = "none";
+    }, 8000);
+}
+
+    function handleResolutionMessage(orderId, resolution) {
+        const notifBox = document.getElementById("statusNotification");
+
+        if (resolution === "Refund") {
+            notifBox.textContent = `Your order #${orderId} has been refunded. Funds will reflect within 3–5 business days.`;
+        } else if (resolution === "Replacement") {
+            notifBox.textContent = `Your order #${orderId} will be replaced at no extra cost.`;
+        } else if (resolution === "Denied") {
+            notifBox.textContent = `Your refund/replacement request for order #${orderId} has been denied.`;
+        } else {
+            notifBox.textContent = "";
+        }
+
+        notifBox.style.display = resolution ? "block" : "none";
+    }
+
+    </script>
+</body>
+
+</html>
+

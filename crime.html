@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crime Incident Report</title>
+  <style>
+    body{font-family:Arial,sans-serif;background-color:#fff5f5;color:#b00000;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;min-height:100vh;margin:0;padding:20px;text-align:center}
+    h1{margin-bottom:20px}
+    #status{font-size:20px;margin-bottom:15px}
+    #location{font-size:16px;color:#555;max-width:400px;word-wrap:break-word;margin-bottom:20px}
+    button{background-color:#b00000;color:#fff;border:none;padding:12px 24px;font-size:16px;border-radius:8px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);transition:background-color .2s;margin-bottom:20px;width:200px}
+    button:hover{background-color:#7a0000}
+    .back-button{align-self:flex-start;margin-left:20px;margin-bottom:20px;background-color:#b00000;width:auto}
+    #downloadSection{display:none;flex-direction:column;align-items:center}
+  </style>
+</head>
+<body>
+  <button class="back-button" onclick="window.location.href='incidents.html'">← Back to Incident Types</button>
+  <h1>Crime Incident Report</h1>
+  <div id="status">Notifying emergency services...</div>
+  <div id="location">Getting your address...</div>
+  <div id="downloadSection"><button onclick="downloadPDF()">Download PDF</button></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let currentAddress='';
+    const driverUsername=localStorage.getItem("driverUsername")||"Unknown Driver";
+    function saveIncident(type,location,description=''){
+      const incidents=JSON.parse(localStorage.getItem('incidents')||'[]');
+      const now=new Date().toLocaleString();
+      incidents.push({dateTime:now,type:type,location:location,driver:driverUsername,description:description});
+      localStorage.setItem('incidents',JSON.stringify(incidents));
+    }
+    async function reverseGeocode(latitude,longitude){
+      try{
+        const response=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+        if(!response.ok) throw new Error('Network response was not ok');
+        const data=await response.json();
+        return data.display_name||"Address not found";
+      }catch(error){
+        console.error('Reverse geocoding failed:',error);
+        return "Unable to retrieve address";
+      }
+    }
+    async function notifyEmergencyServices(latitude,longitude){
+      currentAddress=await reverseGeocode(latitude,longitude);
+      document.getElementById('status').textContent='Police have been notified and are on their way.';
+      document.getElementById('location').textContent=`Your location: ${currentAddress}`;
+      alert(`🚔 Crime incident reported by ${driverUsername}! Police have been notified.`);
+      saveIncident('Crime',currentAddress,'Crime emergency automatically reported.');
+      document.getElementById('downloadSection').style.display='flex';
+    }
+    function handleLocationError(error){
+      document.getElementById('status').textContent='Unable to get your location.';
+      document.getElementById('location').textContent='Please allow location access and try again.';
+      console.error(error);
+    }
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(position=>{notifyEmergencyServices(position.coords.latitude,position.coords.longitude);},error=>{handleLocationError(error);},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+    }else{
+      document.getElementById('status').textContent='Geolocation is not supported by your browser.';
+      document.getElementById('location').textContent='';
+    }
+    function downloadPDF(){
+      const { jsPDF } = window.jspdf;
+      const doc=new jsPDF();
+      const now=new Date().toLocaleString();
+      doc.setFontSize(14);
+      doc.text("SecureMove - Crime Incident Report",20,20);
+      doc.setFontSize(12);
+      doc.text(`Date & Time: ${now}`,20,40);
+      doc.text(`Driver: ${driverUsername}`,20,50);
+      doc.text(`Location: ${currentAddress}`,20,60);
+      doc.text(`Incident Type: Crime`,20,70);
+      doc.text("Description: Crime emergency automatically reported.",20,80,{maxWidth:170});
+      doc.save("Crime_Incident_Report.pdf");
+    }
+  </script>
+</body>
+</html>
+

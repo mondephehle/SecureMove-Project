@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureMove - Driver Tools & Emergency</title>
+
+
+  <style>
+    /* Reset & Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f8;
+      color: #333;
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    /* Header Styles */
+    header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #fff;
+      padding: 10px 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 40px;
+    }
+
+    .logo img {
+      height: 50px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+    }
+
+    nav a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #333;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: #b00000;
+    }
+
+    .dashboard-btn {
+      background: linear-gradient(to right, #7b42ff, #3d9eff);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .dashboard-btn:hover {
+      opacity: 0.85;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .login-btn,
+    .logout-btn {
+      background-color: #00b2ff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .logout-btn {
+      background-color: #ff4444;
+    }
+
+    .login-btn:hover {
+      background-color: #008bcc;
+    }
+
+    .logout-btn:hover {
+      background-color: #cc0000;
+    }
+
+    main {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .tool-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      transition: 0.3s ease;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .tool-card h2 {
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+      color: #0077cc;
+    }
+
+    .tool-card p {
+      margin-bottom: 15px;
+      color: #666;
+    }
+
+    .tool-card input,
+    .tool-card select,
+    .tool-card textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    button {
+      background-color: #0077cc;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #myRouteOutput {
+      background: #f0f3f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    #myRouteOutput ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    #myRouteOutput li {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .emergency-button {
+      background-color: red;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      width: 150px;
+      height: 150px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, background-color 0.2s;
+      margin: 0 auto 20px;
+    }
+
+    .emergency-button:hover {
+      background-color: darkred;
+      transform: scale(1.1);
+    }
+
+    .emergency-button:active {
+      transform: scale(0.95);
+    }
+
+    .panic-button {
+      background-color: #ff4500;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, background-color 0.2s;
+      display: block;
+      margin: auto;
+    }
+
+    .panic-button:hover {
+      background-color: #c23300;
+      transform: scale(1.05);
+    }
+
+    .panic-button:active {
+      transform: scale(0.95);
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #ffffff;
+      border-top: 1px solid #ccc;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    footer nav {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    footer nav a {
+      color: #0077cc;
+      font-size: 1.2rem;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    footer nav a:hover {
+      color: #005fa3;
+    }
+
+    /* Enhanced Proof of Delivery Styles */
+    #imagePreview {
+      display: none;
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    #previewImage {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+
+    #deliveryStatus {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #deliveryNote {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #uploadStatus {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* New Panic Alert Modal Styles */
+    .panic-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .panic-modal-content {
+      background-color: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 8px 24px rgba(214, 31, 31, 0.2);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      animation: pulse 1.5s infinite;
+    }
+
+    .panic-modal h1 {
+      margin: 0 0 20px 0;
+      font-size: 2rem;
+      color: #c62828;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .panic-status {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      font-weight: 600;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .panic-location {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 25px;
+      padding: 12px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    .emergency-contacts {
+      background-color: #fff3e0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+
+    .contact-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #ffe0b2;
+    }
+
+    .panic-back-button {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      margin-top: 15px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .panic-back-button:hover {
+      background-color: #b71c1c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    .loading-spinner {
+      border: 4px solid rgba(198, 40, 40, 0.2);
+      border-radius: 50%;
+      border-top: 4px solid #c62828;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+
+    .success-icon {
+      color: #2e7d32;
+      font-size: 2.5rem;
+      margin: 10px 0;
+    }
+
+    .alert-icon {
+      color: #c62828;
+      font-size: 2.5rem;
+      margin: 10px 0;
+    }
+
+    .countdown {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #c62828;
+      margin: 10px 0;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Panic Alert Modal -->
+  <div id="panicModal" class="panic-modal">
+    <div class="panic-modal-content">
+      <h1><span class="alert-icon">🚨</span> EMERGENCY ALERT</h1>
+      
+      <div class="panic-status" id="panicStatus">
+        <div class="loading-spinner"></div>
+        <div>Activating emergency response...</div>
+      </div>
+      
+      <div class="panic-location" id="panicLocation">Detecting your location...</div>
+      
+      <div class="emergency-contacts" id="contactsContainer" style="display: none;">
+        <h3 style="margin-top: 0;">Emergency Contacts Notified:</h3>
+        <div class="contact-item">
+          <span>Company Security Team:</span>
+          <span id="companyStatus">Contacting...</span>
+        </div>
+        <div class="contact-item">
+          <span>Local Police:</span>
+          <span id="policeStatus">Contacting...</span>
+        </div>
+        <div class="contact-item">
+          <span>Medical Services:</span>
+          <span id="ambulanceStatus">Contacting...</span>
+        </div>
+      </div>
+      
+      <div class="countdown" id="countdown" style="display: none;">
+        Help arriving in: <span id="countdown-number">5:00</span>
+      </div>
+      
+      <button class="panic-back-button" id="panicBackButton" style="display: none;">
+        ← Return to Safety (Emergency services still notified)
+      </button>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo">
+      <img src="your-logo.png" alt="SecureMove Logistics Logo" />
+    </div>
+    <nav>
+      <a href="#" class="dashboard-btn">Dashboard</a>
+      <a href="#">Home</a>
+      <a href="#">Services</a>
+      <a href="#">About</a>
+      <a href="#">Reviews</a>
+    </nav>
+    <div class="auth-buttons">
+      <a href="signuplogin.html" class="login-btn">Login</a>
+      <a href="index.html" class="logout-btn">Logout</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Emergency Section -->
+    <section class="tool-card" style="text-align: center;">
+      <h2>🚨 Emergency Response</h2>
+      <p>If you're in danger or face an emergency, press the button below:</p>
+      <button class="emergency-button" onclick="window.location.href='incidents.html'">🚨</button>
+      <br />
+      <button class="panic-button" onclick="sendPanicAlert()">Send Panic Alert</button>
+    </section>
+
+    <!-- Driver Tool Sections -->
+    <section class="tool-card">
+      <h2>📍 My Route</h2>
+      <p>View today's assigned route</p>
+      <div id="myRouteOutput" style="margin-top: 15px;"></div>
+      <div id="mapContainer" style="margin-top: 15px;"></div>
+      <button onclick="loadMyRoute()">View Route</button>
+      <button onclick="returnFromRoute()">Returned from Route</button>
+    </section>
+
+    <section class="tool-card">
+      <h2>📸 Upload Proof of Delivery</h2>
+      <p>Take or upload delivery photos with details</p>
+      
+      <input type="file" id="deliveryImage" accept="image/*" capture="environment">
+      <textarea id="deliveryNote" placeholder="Delivery notes (optional)"></textarea>
+      <select id="deliveryStatus">
+        <option value="Delivered">Delivered Successfully</option>
+        <option value="Partially Delivered">Partially Delivered</option>
+        <option value="Failed Delivery">Failed Delivery</option>
+      </select>
+      
+      <div id="imagePreview">
+        <img id="previewImage" src="#" alt="Preview">
+      </div>
+      
+      <button onclick="uploadDeliveryImage()" id="uploadBtn">Upload Proof</button>
+      <p id="uploadStatus"></p>
+    </section>
+
+    <section class="tool-card">
+      <h2>📝 Log Incident</h2>
+      <p>Describe the incident</p>
+      <select id="incidentType">
+        <option value="">Select Type</option>
+        <option>Package Damaged</option>
+        <option>Delay</option>
+        <option>Accident</option>
+        <option>Other</option>
+      </select>
+      <textarea id="incidentDesc" placeholder="Describe the incident"></textarea>
+      <button onclick="submitIncident()">Submit Incident</button>
+    </section>
+
+    <section class="tool-card">
+      <h2>🛠️ Report Vehicle Issue</h2>
+      <p>Report vehicle issue</p>
+      <select id="vehicleIssueType">
+        <option value="">Select Issue</option>
+        <option>Engine</option>
+        <option>Tyres</option>
+        <option>Lights</option>
+        <option>Brakes</option>
+        <option>Other</option>
+      </select>
+      <textarea id="vehicleIssueDesc" placeholder="Describe the issue"></textarea>
+      <button onclick="submitVehicleIssue()">Submit Report</button>
+    </section>
+  </main>
+
+  <footer>
+    <nav>
+      <a href="#">🏠 Home</a>
+      <a href="#">🚦 My Route</a>
+      <a href="#">📤 Upload</a>
+      <a href="#">📝 Logs</a>
+      <a href="#">☰ More</a>
+    </nav>
+  </footer>
+
+  <script>
+  
+
+    // Image preview functionality
+    document.getElementById('deliveryImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const preview = document.getElementById('previewImage');
+          preview.src = event.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Enhanced emergency functions
+    function triggerEmergency() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login to use emergency features");
+        return;
+      }
+
+      if (confirm("This will notify emergency services. Are you in immediate danger?")) {
+        // Get current location if available
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const emergencyData = {
+                driverId: user.uid,
+                driverEmail: user.email || "unknown",
+                timestamp: Date.now(),
+                location: {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                  accuracy: position.coords.accuracy
+                },
+                status: "Emergency triggered"
+              };
+
+              db.ref("emergencies").push(emergencyData)
+                .then(() => {
+                  alert("Emergency services notified with your location!");
+                })
+                .catch(error => {
+                  console.error("Emergency report failed:", error);
+                  alert("Emergency notification failed. Please call for help directly.");
+                });
+            },
+            (error) => {
+              // Location failed but still report emergency
+              const emergencyData = {
+                driverId: user.uid,
+                driverEmail: user.email || "unknown",
+                timestamp: Date.now(),
+                status: "Emergency triggered (no location)"
+              };
+
+              db.ref("emergencies").push(emergencyData)
+                .then(() => {
+                  alert("Emergency services notified! Please call for help if needed.");
+                });
+            }
+          );
+        } else {
+          // No geolocation available
+          const emergencyData = {
+            driverId: user.uid,
+            driverEmail: user.email || "unknown",
+            timestamp: Date.now(),
+            status: "Emergency triggered (no location support)"
+          };
+
+          db.ref("emergencies").push(emergencyData)
+            .then(() => {
+              alert("Emergency services notified! Please call for help if needed.");
+            });
+        }
+      }
+    }
+
+    // Panic Alert Functions
+    async function simulateNotification(elementId, serviceName, delay) {
+      return new Promise(resolve => {
+        document.getElementById(elementId).textContent = "Connecting...";
+        
+        setTimeout(() => {
+          document.getElementById(elementId).textContent = "✓ Dispatched";
+          document.getElementById(elementId).style.color = "#2e7d32";
+          document.getElementById(elementId).style.fontWeight = "bold";
+          resolve();
+        }, delay);
+      });
+    }
+
+    function startCountdown() {
+      const countdownElement = document.getElementById('countdown-number');
+      const countdownContainer = document.getElementById('countdown');
+      let minutes = 5;
+      let seconds = 0;
+      
+      countdownContainer.style.display = 'block';
+      
+      const interval = setInterval(() => {
+        if (seconds === 0) {
+          if (minutes === 0) {
+            clearInterval(interval);
+            countdownElement.textContent = "Arrived!";
+            return;
+          }
+          minutes--;
+          seconds = 59;
+        } else {
+          seconds--;
+        }
+        
+        countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+      }, 1000);
+    }
+
+    function playAlertSound() {
+      try {
+        const alarm = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+        alarm.loop = true;
+        alarm.play();
+        
+        // Stop alarm after 10 seconds
+        setTimeout(() => alarm.pause(), 10000);
+      } catch (e) {
+        console.log("Couldn't play alarm sound");
+      }
+    }
+
+    async function getLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => resolve(position),
+            error => reject(error),
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+        } else {
+          reject(new Error("Geolocation not supported"));
+        }
+      });
+    }
+
+    async function reverseGeocode(lat, lon) {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return data.display_name || "Unknown location";
+      } catch (error) {
+        console.error('Reverse geocoding failed:', error);
+        return "Location detected but address unavailable";
+      }
+    }
+
+    function saveEmergencyAlert(location, coords) {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const alertData = {
+        driverId: user.uid,
+        driverEmail: user.email || "unknown",
+        timestamp: Date.now(),
+        location: location,
+        coordinates: coords,
+        status: "active",
+        handled: false
+      };
+
+      // Save to Firebase database
+      return database.ref("emergencyAlerts").push(alertData);
+    }
+
+    async function activateEmergencyResponse(location, coords) {
+      try {
+        // Show emergency contacts
+        document.getElementById('contactsContainer').style.display = 'block';
+        
+        // 1. Notify company security (simulate API call)
+        await simulateNotification('companyStatus', 'Security Team', 1500);
+        
+        // 2. Notify local police (simulate API call)
+        await simulateNotification('policeStatus', 'Police Dispatch', 2000);
+        
+        // 3. Notify medical services (simulate API call)
+        await simulateNotification('ambulanceStatus', 'Medical Services', 1800);
+        
+        // Start countdown timer
+        startCountdown();
+        
+        // Show success message
+        document.getElementById('panicStatus').innerHTML = `
+          <div class="success-icon">✓</div>
+          <div>Emergency services have been alerted!</div>
+          <div style="font-size: 0.9rem; margin-top: 8px;">Stay calm, help is on the way</div>
+        `;
+        
+        // Show back button
+        document.getElementById('panicBackButton').style.display = 'block';
+        
+        // Play alarm sound
+        playAlertSound();
+        
+        return true;
+      } catch (error) {
+        console.error("Emergency response failed:", error);
+        return false;
+      }
+    }
+
+    async function sendPanicAlert() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login to use emergency features");
+        return;
+      }
+
+      // Show the panic modal
+      const panicModal = document.getElementById('panicModal');
+      panicModal.style.display = 'flex';
+
+      try {
+        // Get current location
+        const position = await getLocation();
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const address = await reverseGeocode(lat, lon);
+        const coords = { lat, lng: lon };
+
+        // Update UI with location
+        document.getElementById('panicLocation').textContent = `Your location: ${address}`;
+        
+        // Save alert to database
+        await saveEmergencyAlert(address, coords);
+        
+        // Activate emergency response
+        await activateEmergencyResponse(address, coords);
+
+      } catch (error) {
+        console.error("Panic alert failed:", error);
+        
+        // Still notify without location if possible
+        document.getElementById('panicStatus').innerHTML = `
+          <div class="alert-icon">⚠️</div>
+          <div>Emergency alert activated!</div>
+          <div style="font-size: 0.9rem; margin-top: 8px;">${error.message || 'Location unavailable'}</div>
+        `;
+        
+        document.getElementById('panicLocation').textContent = "Approximate location will be used";
+        
+        // Save alert without precise location
+        if (user) {
+          await db.ref("emergencyAlerts").push({
+            driverId: user.uid,
+            driverEmail: user.email || "unknown",
+            timestamp: Date.now(),
+            location: "Approximate location only",
+            status: "active",
+            handled: false
+          });
+        }
+        
+        // Still try to notify services
+        document.getElementById('contactsContainer').style.display = 'block';
+        await activateEmergencyResponse("Unknown location", null);
+      }
+    }
+
+    // Set up back button for panic modal
+    document.getElementById('panicBackButton').addEventListener('click', () => {
+      document.getElementById('panicModal').style.display = 'none';
+    });
+
+  function loadMyRoute() {
+  const user = auth.currentUser;
+  if (!user) return alert("User not authenticated.");
+
+  // Target the UI elements
+  const routeOutput = document.getElementById("myRouteOutput");
+  const mapContainer = document.getElementById("mapContainer");
+
+  db.ref("inRouteDeliveries").once("value")
+    .then(snapshot => {
+      const deliveries = snapshot.val();
+      if (!deliveries) {
+          // This will trigger the .catch block with our custom message
+          throw new Error("No active route found for this driver.");
+      }
+
+      let latestRoute = null;
+
+      Object.values(deliveries).forEach(delivery => {
+        if (delivery.driverName === user.email && delivery.status === "In Transit") {
+          const startedAtTime = new Date(delivery.startedAt).getTime();
+          if (!latestRoute || startedAtTime > new Date(latestRoute.startedAt).getTime()) {
+            latestRoute = delivery;
+          }
+        }
+      });
+
+      if (!latestRoute) {
+          // This will also trigger the .catch block
+          throw new Error("No active route found for this driver.");
+      }
+
+      const bookings = latestRoute.bookings || {};
+      let output = `<h3>Truck: ${latestRoute.truckName}</h3><ul>`;
+      let addresses = [];
+
+      Object.values(bookings).forEach(b => {
+        output += `<li><strong>${b.name}</strong><br>Pickup: ${b.pickup_address}<br>Dropoff: ${b.dropoff_address}<br>Volume: ${b.volume} m³</li><br>`;
+        addresses.push(b.pickup_address);
+        addresses.push(b.dropoff_address);
+      });
+
+      output += `</ul>`;
+      routeOutput.innerHTML = output;
+
+      if (addresses.length >= 2) {
+        const origin = addresses[0];
+        const destination = addresses[addresses.length - 1];
+        const waypoints = addresses.slice(1, -1).join("|");
+          const mapURL = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyD95Pxc5Qm1jWK2JjSySH59wPJI9eUebhU&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&mode=driving`;
+        mapContainer.innerHTML = `<iframe width="100%" height="400" style="border:0" loading="lazy" allowfullscreen src="${mapURL}"></iframe>`;
+      }
+    })
+    .catch(error => {
+      // CHANGED: This block now handles all errors, including "no route found"
+      console.error("Error fetching route:", error);
+      alert(error.message || "Failed to load route."); // Keep the alert for user feedback
+      
+      // And also update the UI to show the "no route" message
+      routeOutput.innerHTML = "<h3>No Active Route</h3><p>You are currently available for the next assignment.</p>";
+      mapContainer.innerHTML = ""; // Ensure map is cleared
+    });
+}
+
+
+
+    // Enhanced Proof of Delivery Upload with ImgBB
+    async function uploadDeliveryImage() {
+      const fileInput = document.getElementById("deliveryImage");
+      const file = fileInput.files[0];
+      const deliveryNote = document.getElementById("deliveryNote").value;
+      const deliveryStatus = document.getElementById("deliveryStatus").value;
+      
+      if (!file) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You must be logged in to upload proof.");
+        return;
+      }
+
+      // Disable button during upload
+      const uploadBtn = document.getElementById("uploadBtn");
+      const statusElement = document.getElementById("uploadStatus");
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
+      statusElement.textContent = "";
+      statusElement.style.color = "inherit";
+      
+      try {
+        // 1. Upload to ImgBB
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${'a3721e6822a2b5592131c38ef917bc74'}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const imgbbResult = await imgbbResponse.json();
+        
+        if (!imgbbResult.success) {
+          throw new Error("Image upload failed to ImgBB");
+        }
+        
+        const imageUrl = imgbbResult.data.url;
+
+        // 2. Get location if available
+        let location = null;
+        try {
+          if (navigator.geolocation) {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+            });
+            location = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            };
+          }
+        } catch (geoError) {
+          console.warn("Geolocation error (optional):", geoError);
+        }
+        
+        // 3. Create delivery record in Firebase database
+        const deliveryData = {
+          imageUrl: imageUrl,
+          driverId: user.uid,
+          driverEmail: user.email || "unknown",
+          timestamp: Date.now(),
+          note: deliveryNote,
+          status: deliveryStatus,
+          location: location,
+          viewedByAdmin: false,
+          imageHost: "imgbb" // Track where the image is hosted
+        };
+        
+        await db.ref("proofs").push(deliveryData);
+        
+        // Success feedback
+        statusElement.textContent = "✓ Proof uploaded successfully!";
+        statusElement.style.color = "green";
+        
+        // Reset form
+        fileInput.value = "";
+        document.getElementById("deliveryNote").value = "";
+        document.getElementById("imagePreview").style.display = "none";
+
+      } catch (error) {
+        console.error("Upload failed:", error);
+        statusElement.textContent = "Upload failed: " + 
+          (error.message || "Please check your connection and try again");
+        statusElement.style.color = "red";
+      } finally {
+        // Always re-enable button
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = "Upload Proof";
+      }
+    }
+
+    function submitIncident() {
+      const type = document.getElementById("incidentType").value;
+      const description = document.getElementById("incidentDesc").value.trim();
+      if (!type || !description) return alert("Please complete both fields.");
+
+      const user = auth.currentUser;
+      if (!user) return alert("You must be logged in.");
+
+      const incident = {
+        type,
+        description,
+        driverId: user.uid,
+        driverEmail: user.email || "unknown driver",
+        timestamp: Date.now()
+      };
+
+      db.ref("incidents").push(incident)
+        .then(() => {
+          alert("Incident submitted.");
+          document.getElementById("incidentType").value = "";
+          document.getElementById("incidentDesc").value = "";
+        })
+        .catch(error => {
+          console.error("Error submitting incident:", error);
+          alert("Failed to submit incident.");
+        });
+    }
+
+
+async function returnFromRoute() {
+    const user = auth.currentUser;
+    if (!user) {
+        return alert("Error: You must be logged in to perform this action.");
+    }
+
+    if (!confirm("Are you sure you want to end this route? This will mark the truck and your status as 'Available'.")) {
+        return;
+    }
+
+    console.log("Starting 'Return from Route' process for user:", user.email);
+
+    try {
+        // ... (all the database logic remains the same) ...
+
+        // --- Step 1 to 4 are unchanged ---
+        const deliveriesRef = db.ref("inRouteDeliveries");
+        const snapshot = await deliveriesRef.orderByChild('driverName').equalTo(user.email).once("value");
+        const deliveries = snapshot.val();
+
+        if (!deliveries) throw new Error("No delivery records found for your account.");
+        
+        let activeRouteKey = null;
+        for (const key in deliveries) {
+            if (deliveries[key].status === "In Transit") {
+                activeRouteKey = key;
+                break;
+            }
+        }
+
+        if (!activeRouteKey) throw new Error("Could not find an active 'In Transit' route for you.");
+        
+        const activeRouteData = deliveries[activeRouteKey];
+        const truckNameToUpdate = activeRouteData.truckName;
+        const updates = {};
+
+        updates[`inRouteDeliveries/${activeRouteKey}/status`] = 'Completed';
+        updates[`inRouteDeliveries/${activeRouteKey}/endedAt`] = new Date().toISOString();
+
+        const trucksRef = db.ref('standardTrucks');
+        const trucksSnapshot = await trucksRef.orderByChild('name').equalTo(truckNameToUpdate).once('value');
+        const trucks = trucksSnapshot.val();
+        
+        if (!trucks) throw new Error(`Critical Error: The truck '${truckNameToUpdate}' could not be found in the 'standardTrucks' table.`);
+        
+        const truckKey = Object.keys(trucks)[0];
+        updates[`standardTrucks/${truckKey}/status`] = 'available';
+
+        const usersRef = db.ref('users');
+        const usersSnapshot = await usersRef.orderByChild('email').equalTo(user.email).once('value');
+        const users = usersSnapshot.val();
+
+        if (!users) throw new Error("Critical Error: Your user profile could not be found in the 'users' table.");
+        
+        const userKey = Object.keys(users)[0];
+        updates[`users/${userKey}/status`] = 'available';
+
+        // --- Step 5: Execute all updates atomically ---
+        console.log("Applying all updates:", updates);
+        await db.ref().update(updates);
+
+        alert("Success! You have returned from the route.");
+        
+        // --- UI UPDATE ON SUCCESS ---
+        // CHANGED: Instead of just clearing, we now display a status message.
+        document.getElementById("myRouteOutput").innerHTML = "<h3>No Active Route</h3><p>You are currently available for the next assignment.</p>";
+        document.getElementById("mapContainer").innerHTML = ""; // Keep the map cleared
+
+    } catch (error) {
+        console.error("Return from Route failed:", error);
+        alert(`An error occurred: ${error.message}`);
+    }
+}
+
+    function submitVehicleIssue() {
+      const type = document.getElementById("vehicleIssueType").value;
+      const description = document.getElementById("vehicleIssueDesc").value.trim();
+      if (!type || !description) return alert("Please complete both fields.");
+
+      const user = auth.currentUser;
+      if (!user) return alert("You must be logged in.");
+
+      const issue = {
+        type,
+        description,
+        driverId: user.uid,
+        driverEmail: user.email || "unknown driver",
+        timestamp: Date.now()
+      };
+
+      db.ref("vehicle_issues").push(issue)
+        .then(() => {
+          alert("Vehicle issue reported.");
+          document.getElementById("vehicleIssueType").value = "";
+          document.getElementById("vehicleIssueDesc").value = "";
+        })
+        .catch(error => {
+          console.error("Error submitting vehicle issue:", error);
+          alert("Failed to report issue.");
+        });
+    }
+
+    // Auth state management
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>
+

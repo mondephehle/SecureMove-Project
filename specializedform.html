@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🚚 Special Services Booking</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+      padding: 50px;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      padding: 40px 35px 30px 35px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 18px;
+      border: 1px solid #e3e3e3;
+      position: relative;
+    }
+    h1 {
+      text-align: center;
+      color: #2d5be3;
+      margin-bottom: 30px;
+      font-size: 2.1rem;
+      letter-spacing: 1px;
+    }
+    label {
+      font-weight: 500;
+      margin-top: 18px;
+      margin-bottom: 5px;
+      color: #2d5be3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.08rem;
+    }
+    input, textarea, select {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border-radius: 7px;
+      border: 1.5px solid #b2bec3;
+      font-size: 1rem;
+      background: #f7faff;
+      transition: border 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border: 1.5px solid #2d5be3;
+      background: #eaf1fb;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      max-height: 200px;
+    }
+    button {
+      padding: 12px 0;
+      background: linear-gradient(90deg, #2d5be3 0%, #4796eb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 10px;
+      width: 100%;
+      box-shadow: 0 2px 8px rgba(68,138,218,0.08);
+      transition: background 0.2s;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #4796eb 0%, #2d5be3 100%);
+    }
+    .file-upload-label {
+      background: #eaf1fb;
+      border: 1.5px dashed #2d5be3;
+      border-radius: 7px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 15px;
+      color: #2d5be3;
+      font-size: 1.05rem;
+      transition: background 0.2s, border 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .file-upload-label:hover {
+      background: #dbeafe;
+      border-color: #4796eb;
+    }
+    #sdsUpload {
+      display: none;
+    }
+    .success, .error {
+      text-align: center;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+    .success { color: #27ae60; }
+    .error { color: #e74c3c; }
+    .emoji {
+      font-size: 1.25em;
+      margin-right: 6px;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 18px 5vw; }
+      h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container"></div>
+  <h1>Hazardous Materials/Medicinal Transport Request</h1>
+
+  <form id="hazmatForm">
+    <label for="materialName">Material Name:</label>
+    <input type="text" id="materialName" name="materialName" required>
+
+    <label for="unNumber">UN Number:</label>
+    <input type="text" id="unNumber" name="unNumber" required>
+
+    <label for="hazardClass">Hazard Class/Medication:</label>
+    <select id="hazardClass" name="hazardClass" required>
+      <option value="">-- Select --</option>
+      <option value="Medication" data-price="200">Medication (R200)</option>
+      <option value="Explosives" data-price="500">Class 1 – Explosives (R500)</option>
+      <option value="Gases" data-price="400">Class 2 – Gases (R400)</option>
+      <option value="FlammableLiquids" data-price="350">Class 3 – Flammable Liquids (R350)</option>
+      <option value="FlammableSolids" data-price="300">Class 4 – Flammable Solids (R300)</option>
+      <option value="Oxidizers" data-price="320">Class 5 – Oxidizers & Peroxides (R320)</option>
+      <option value="Toxics" data-price="450">Class 6 – Toxics & Infectious (R450)</option>
+      <option value="Radioactive" data-price="800">Class 7 – Radioactive (R800)</option>
+      <option value="Corrosive" data-price="370">Class 8 – Corrosive (R370)</option>
+      <option value="Miscellaneous" data-price="250">Class 9 – Miscellaneous (R250)</option>
+    </select>
+
+    <label for="quantity">Quantity :</label>
+    <input type="number" id="quantity" name="quantity" min="0.1" step="0.1" required>
+
+    <label for="packagingType">Packaging Type:</label>
+    <select id="packagingType" name="packagingType" required>
+      <option value="">-- Select Packaging Type --</option>
+      <option value="Drum" data-price="100">Drum (R100)</option>
+      <option value="Box" data-price="80">Box (R80)</option>
+      <option value="Bag" data-price="60">Bag (R60)</option>
+      <option value="Cylinder" data-price="120">Cylinder (R120)</option>
+      <option value="IBC" data-price="200">Intermediate Bulk Container (IBC) (R200)</option>
+      <option value="Jerrican" data-price="90">Jerrican (R90)</option>
+      <option value="Can" data-price="70">Can (R70)</option>
+      <option value="Bottle" data-price="50">Bottle (R50)</option>
+      <option value="Carton" data-price="85">Carton (R85)</option>
+      <option value="Crate" data-price="110">Crate (R110)</option>
+      <option value="Pallet" data-price="150">Pallet (R150)</option>
+      <option value="Other" data-price="60">Other (R60)</option>
+    </select>
+
+    <label for="width">Width (m):</label>
+    <input type="number" id="width" name="width" min="0" step="0.01" required>
+
+    <label for="length">Length (m):</label>
+    <input type="number" id="length" name="length" min="0" step="0.01" required>
+
+    <label for="height">Height (m):</label>
+    <input type="number" id="height" name="height" min="0" step="0.01" required>
+
+    <label for="weight">Weight (kg):</label>
+    <input type="number" id="weight" name="weight" min="0" step="0.01" required>
+
+    <label for="description">Detailed Description of Materials:</label>
+    <textarea id="description" rows="4" required></textarea>
+    
+    <label for="emergencyContact">Emergency Contact Name:</label>
+    <input type="text" id="emergencyContact" name="emergencyContact" required>
+
+    <label for="emergencyPhone">Emergency Contact Phone:</label>
+    <input type="text" id="emergencyPhone" name="emergencyPhone" required pattern="0\d{9}" maxlength="10" title="Phone number must start with 0 and be exactly 10 digits">
+
+    <label for="sdsUpload" class="file-upload-label">
+      <i class="fa-solid fa-file-arrow-up"></i>
+      Upload Safety Data Sheet (SDS)/Prescription for medication:
+    </label>
+    <input type="file" id="sdsUpload" name="sdsUpload" accept=".pdf,.doc,.docx" required>
+
+    <div id="pricingSummary" style="margin:20px 0; font-weight:600; color:#2d5be3;"></div>
+
+    <button type="submit">Submit Request</button>
+  </form>
+</div>
+
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const storage = firebase.storage();
+
+  // Block access if terms not accepted
+  if (localStorage.getItem("termsAccepted") !== "true") {
+    window.location.href = "terms.html";
+  }
+
+  // Pricing calculation
+  function calculatePricing() {
+    const hazardClass = document.getElementById("hazardClass");
+    const packagingType = document.getElementById("packagingType");
+    const weight = parseFloat(document.getElementById("weight").value) || 0;
+    const width = parseFloat(document.getElementById("width").value) || 0;
+    const length = parseFloat(document.getElementById("length").value) || 0;
+    const height = parseFloat(document.getElementById("height").value) || 0;
+
+    const hazardPrice = parseFloat(hazardClass.selectedOptions[0]?.getAttribute("data-price")) || 0;
+    const packagingPrice = parseFloat(packagingType.selectedOptions[0]?.getAttribute("data-price")) || 0;
+    const weightPrice = weight * 15;
+    const dimensionPrice = (width + length + height) * 25;
+    const total = hazardPrice + packagingPrice + weightPrice + dimensionPrice;
+
+    document.getElementById("pricingSummary").innerHTML =
+      `<div style="background:#f7faff;border-radius:10px;padding:18px 22px;box-shadow:0 2px 10px rgba(45,91,227,0.07);border:1.5px solid #e3eafc;max-width:420px;margin:auto;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span><i class="fa-solid fa-triangle-exclamation" style="color:#2d5be3;margin-right:6px;"></i>Hazard Class</span>
+        <span style="font-weight:600;">R${hazardPrice.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span><i class="fa-solid fa-box" style="color:#4796eb;margin-right:6px;"></i>Packaging</span>
+        <span style="font-weight:600;">R${packagingPrice.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span><i class="fa-solid fa-weight-hanging" style="color:#27ae60;margin-right:6px;"></i>Weight</span>
+        <span style="font-weight:600;">R${weightPrice.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+        <span><i class="fa-solid fa-ruler-combined" style="color:#e67e22;margin-right:6px;"></i>Dimensions (W+L+H)</span>
+        <span style="font-weight:600;">R${dimensionPrice.toFixed(2)}</span>
+      </div>
+      <hr style="border:none;border-top:1.5px solid #e3eafc;margin:10px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:1.13em;font-weight:700;letter-spacing:0.5px;">Additional Price</span>
+        <span style="font-size:1.25em;font-weight:800;color:#27ae60;">R${total.toFixed(2)}</span>
+      </div>
+      </div>`;
+
+    return {
+      hazardPrice,
+      packagingPrice,
+      weightPrice,
+      dimensionPrice,
+      total
+    };
+  }
+
+  // Update pricing on input change
+  ["hazardClass", "packagingType", "weight", "width", "length", "height"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calculatePricing);
+  });
+
+  // Initial pricing display
+  window.addEventListener("DOMContentLoaded", calculatePricing);
+
+  const hazmatForm = document.getElementById("hazmatForm");
+
+  hazmatForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const materialName = document.getElementById("materialName").value;
+    const unNumber = document.getElementById("unNumber").value;
+    const hazardClass = document.getElementById("hazardClass").value;
+    const hazardClassText = document.getElementById("hazardClass").selectedOptions[0].text;
+    const quantity = document.getElementById("quantity").value;
+    const packagingType = document.getElementById("packagingType").value;
+    const packagingTypeText = document.getElementById("packagingType").selectedOptions[0].text;
+    const width = document.getElementById("width").value;
+    const length = document.getElementById("length").value;
+    const height = document.getElementById("height").value;
+    const weight = document.getElementById("weight").value;
+    const description = document.getElementById("description").value;
+    const emergencyContact = document.getElementById("emergencyContact").value;
+    const emergencyPhone = document.getElementById("emergencyPhone").value;
+    const sdsUpload = document.getElementById("sdsUpload").files[0];
+
+    if (!sdsUpload) {
+      alert("Please upload a Safety Data Sheet or prescription.");
+      return;
+    }
+
+    try {
+      // Upload file to Firebase Storage
+      const storageRef = storage.ref('sds/' + Date.now() + '_' + sdsUpload.name);
+      const snapshot = await storageRef.put(sdsUpload);
+      const fileUrl = await snapshot.ref.getDownloadURL();
+
+      // Store form data in Firebase Database
+      const bookingRef = db.ref('bookings').push();
+      await bookingRef.set({
+        materialName,
+        unNumber,
+        hazardClass,
+        quantity,
+        packagingType,
+        description,
+        width,
+        length,
+        height,
+        weight,
+        hazardClassText,
+        packagingTypeText,
+        width,
+        length,
+        height,
+        weight,
+
+        emergencyContact,
+        emergencyPhone,
+        sdsUrl: fileUrl,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      alert("Request submitted successfully!");
+      hazmatForm.reset();
+    } catch (error) {
+      alert("Error submitting request: " + error.message);
+    }
+  });
+</script>
+
+
+<script>
+    // Block access if terms not accepted
+    if (localStorage.getItem("termsAccepted") !== "true") {
+      window.location.href = "terms.html";
+    }
+
+  
+
+    hazmatForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const materialName = document.getElementById("materialName").value;
+      const unNumber = document.getElementById("unNumber").value;
+      const hazardClass = document.getElementById("hazardClass").value;
+      const quantity = document.getElementById("quantity").value;
+      const packagingType = document.getElementById("packagingType").value;
+      const description = document.getElementById("description").value;
+      const emergencyContact = document.getElementById("emergencyContact").value;
+      const emergencyPhone = document.getElementById("emergencyPhone").value;
+      const sdsUpload = document.getElementById("sdsUpload").files[0];
+
+      if (!sdsUpload) {
+        alert("Please upload a Safety Data Sheet or prescription.");
+        return;
+      }
+
+      console.log({
+        materialName,
+        unNumber,
+        hazardClass,
+        quantity,
+        packagingType: document.getElementById("packagingType").selectedOptions[0].text,
+        width: document.getElementById("width").value,
+        length: document.getElementById("length").value,
+        height: document.getElementById("height").value,
+        weight: document.getElementById("weight").value,
+        hazardClassText: document.getElementById("hazardClass").selectedOptions[0].text,
+        packagingTypeText: document.getElementById("packagingType").selectedOptions[0].text,
+        width,
+        length,
+        height,
+        weight,
+        description,
+        emergencyContact,
+        emergencyPhone,
+        sdsUpload: sdsUpload.name
+      });
+
+      alert("Request submitted successfully!");
+      hazmatForm.reset();
+      window.location.href = "specializedservicescreen.html";
+    });
+</script>
+</html>

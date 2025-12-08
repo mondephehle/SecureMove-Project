@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Report Incident</title>
+
+  <style>
+
+    body {
+
+      display: flex;
+
+      flex-direction: column;
+
+      justify-content: center;
+
+      align-items: center;
+
+      height: 100vh;
+
+      background-color: #f5f5f5;
+
+      margin: 0;
+
+      font-family: Arial, sans-serif;
+
+    }
+
+ 
+
+    h1 {
+
+      color: #b00000;
+
+      font-size: 26px;
+
+      margin-bottom: 30px;
+
+      text-align: center;
+
+    }
+
+ 
+
+    .button-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(2, 150px);
+
+      gap: 20px;
+
+      justify-content: center;
+
+    }
+
+ 
+
+    .incident-button {
+
+      width: 150px;
+
+      height: 150px;
+
+      background-color: #ff4d4d;
+
+      color: white;
+
+      font-size: 20px;
+
+      font-weight: bold;
+
+      border: none;
+
+      border-radius: 12px;
+
+      cursor: pointer;
+
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+      transition: transform 0.2s, background-color 0.2s;
+
+    }
+
+ 
+
+    .incident-button:hover {
+
+      background-color: #cc0000;
+
+      transform: scale(1.05);
+
+    }
+
+ 
+
+    .incident-button:active {
+
+      transform: scale(0.95);
+
+    }
+
+ 
+
+    /* Style for the long "Other" button */
+
+    .incident-button.other {
+
+      grid-column: span 2;
+
+      width: 100%;
+
+      height: 80px;
+
+      font-size: 22px;
+
+    }
+
+ 
+
+    /* Back button style */
+
+    .back-button {
+
+      align-self: flex-start;
+
+      margin-left: 30px;
+
+      margin-bottom: 20px;
+
+      background-color: #b00000;
+
+      color: white;
+
+      border: none;
+
+      padding: 10px 20px;
+
+      font-size: 16px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+      transition: background-color 0.2s;
+
+    }
+
+ 
+
+    .back-button:hover {
+
+      background-color: #7a0000;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+ 
+
+  <button class="back-button" onclick="window.location.href='accessdrivertools.html'">← Back</button>
+
+ 
+
+ 
+
+  <h1>Select Incident Type</h1>
+
+ 
+
+  <div class="button-grid">
+
+  <button class="incident-button" onclick="window.location.href='fire.html'">🔥 Fire</button>
+
+  <button class="incident-button" onclick="window.location.href='accident.html'">🚑 Accident</button>
+
+  <button class="incident-button" onclick="window.location.href='traffic.html'">🚦 Traffic</button>
+
+  <button class="incident-button" onclick="window.location.href='crime.html'">🕵 Crime</button>
+
+  <button class="incident-button other" onclick="window.location.href='other.html'">❓ Other</button>
+
+</div>
+
+
+</body>
+
+</html>
+
